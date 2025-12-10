@@ -5,6 +5,19 @@ export interface Package {
   title: string;
   description: string;
   imageUrl: string;
+  destination: string;
+  country: string;
+  departureCity: string;
+  nights: number;
+  includesFlight: boolean;
+  includesHotel: boolean;
+  includesTransfer: boolean;
+  hotelName: string;
+  price: number;
+  currency: string;
+  priceNote: string;
+  disclaimer: string;
+  paymentLink: string;
   createdAt: Date;
 }
 

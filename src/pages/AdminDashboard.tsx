@@ -3,12 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   LogOut, Upload, Link as LinkIcon, Copy, Share2, Trash2, 
-  Image as ImageIcon, CheckCircle, Loader2, ExternalLink
+  Image as ImageIcon, CheckCircle, Loader2, ExternalLink,
+  Plane, Building2, Bus
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePackages, Package } from "@/contexts/PackagesContext";
 import { toast } from "@/hooks/use-toast";
-import logoViasol from "@/assets/logo-viasol.jpeg";
+import logoViasol from "@/assets/logo-viasol.svg";
 
 const AdminDashboard = () => {
   const { logout } = useAuth();
@@ -18,6 +19,20 @@ const AdminDashboard = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [destination, setDestination] = useState("");
+  const [country, setCountry] = useState("");
+  const [departureCity, setDepartureCity] = useState("");
+  const [nights, setNights] = useState(7);
+  const [includesFlight, setIncludesFlight] = useState(true);
+  const [includesHotel, setIncludesHotel] = useState(true);
+  const [includesTransfer, setIncludesTransfer] = useState(true);
+  const [hotelName, setHotelName] = useState("");
+  const [price, setPrice] = useState(0);
+  const [currency, setCurrency] = useState("USD");
+  const [priceNote, setPriceNote] = useState("TARIFA POR PERSONA, BASE DBL");
+  const [disclaimer, setDisclaimer] = useState("");
+  const [paymentLink, setPaymentLink] = useState("");
+  
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -41,19 +56,19 @@ const AdminDashboard = () => {
   };
 
   const handleGenerateLink = async () => {
-    if (!title.trim() || !description.trim()) {
+    if (!title.trim() || !destination.trim() || !country.trim()) {
       toast({
         title: "Campos requeridos",
-        description: "Por favor completa el título y la descripción",
+        description: "Por favor completa el título, destino y país",
         variant: "destructive",
       });
       return;
     }
 
-    if (description.length < 50) {
+    if (price <= 0) {
       toast({
-        title: "Descripción muy corta",
-        description: "La descripción debe tener al menos 50 caracteres",
+        title: "Precio inválido",
+        description: "Por favor ingresa un precio válido",
         variant: "destructive",
       });
       return;
@@ -61,13 +76,25 @@ const AdminDashboard = () => {
 
     setIsGenerating(true);
     
-    // Simulate processing
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const id = addPackage({
       title,
       description,
       imageUrl: imagePreview || "",
+      destination,
+      country,
+      departureCity,
+      nights,
+      includesFlight,
+      includesHotel,
+      includesTransfer,
+      hotelName,
+      price,
+      currency,
+      priceNote,
+      disclaimer,
+      paymentLink,
     });
 
     const link = `${window.location.origin}/paquete/${id}`;
@@ -83,6 +110,19 @@ const AdminDashboard = () => {
     setTitle("");
     setDescription("");
     setImagePreview(null);
+    setDestination("");
+    setCountry("");
+    setDepartureCity("");
+    setNights(7);
+    setIncludesFlight(true);
+    setIncludesHotel(true);
+    setIncludesTransfer(true);
+    setHotelName("");
+    setPrice(0);
+    setCurrency("USD");
+    setPriceNote("TARIFA POR PERSONA, BASE DBL");
+    setDisclaimer("");
+    setPaymentLink("");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -152,7 +192,7 @@ const AdminDashboard = () => {
           >
             <h2 className="text-xl font-bold text-navy mb-6">Crear nuevo paquete</h2>
 
-            <div className="space-y-5">
+            <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2">
               {/* Image Upload */}
               <div>
                 <label className="label-text flex items-center gap-2">
@@ -171,7 +211,7 @@ const AdminDashboard = () => {
                         className="w-full h-48 object-cover rounded-xl"
                       />
                       <div className="absolute inset-0 bg-navy/50 rounded-xl flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                        <span className="text-primary-foreground font-medium">Cambiar imagen</span>
+                        <span className="text-white font-medium">Cambiar imagen</span>
                       </div>
                     </div>
                   ) : (
@@ -198,23 +238,178 @@ const AdminDashboard = () => {
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ej: Paquete Caribe 7 días"
+                  placeholder="Ej: Paquete Buzios 7 noches"
+                  className="input-field"
+                />
+              </div>
+
+              {/* Destination & Country */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="label-text">Destino</label>
+                  <input
+                    type="text"
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                    placeholder="Ej: Buzios"
+                    className="input-field"
+                  />
+                </div>
+                <div>
+                  <label className="label-text">País</label>
+                  <input
+                    type="text"
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    placeholder="Ej: Brasil"
+                    className="input-field"
+                  />
+                </div>
+              </div>
+
+              {/* Departure City & Nights */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="label-text">Salida desde</label>
+                  <input
+                    type="text"
+                    value={departureCity}
+                    onChange={(e) => setDepartureCity(e.target.value)}
+                    placeholder="Ej: Córdoba"
+                    className="input-field"
+                  />
+                </div>
+                <div>
+                  <label className="label-text">Noches</label>
+                  <input
+                    type="number"
+                    value={nights}
+                    onChange={(e) => setNights(parseInt(e.target.value) || 0)}
+                    min={1}
+                    className="input-field"
+                  />
+                </div>
+              </div>
+
+              {/* Includes */}
+              <div>
+                <label className="label-text mb-3">Incluye</label>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={includesFlight}
+                      onChange={(e) => setIncludesFlight(e.target.checked)}
+                      className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
+                    />
+                    <Plane className="w-5 h-5 text-primary" />
+                    <span className="text-sm">Vuelo</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={includesHotel}
+                      onChange={(e) => setIncludesHotel(e.target.checked)}
+                      className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
+                    />
+                    <Building2 className="w-5 h-5 text-primary" />
+                    <span className="text-sm">Hotel</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={includesTransfer}
+                      onChange={(e) => setIncludesTransfer(e.target.checked)}
+                      className="w-5 h-5 rounded border-border text-primary focus:ring-primary"
+                    />
+                    <Bus className="w-5 h-5 text-primary" />
+                    <span className="text-sm">Transfer</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Hotel Name */}
+              <div>
+                <label className="label-text">Nombre del hotel (con detalles)</label>
+                <input
+                  type="text"
+                  value={hotelName}
+                  onChange={(e) => setHotelName(e.target.value)}
+                  placeholder="Ej: Latitud Buzios c/ Desayuno"
+                  className="input-field"
+                />
+              </div>
+
+              {/* Price */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="label-text">Precio</label>
+                  <input
+                    type="number"
+                    value={price}
+                    onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
+                    min={0}
+                    className="input-field"
+                  />
+                </div>
+                <div>
+                  <label className="label-text">Moneda</label>
+                  <select
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                    className="input-field"
+                  >
+                    <option value="USD">USD</option>
+                    <option value="ARS">ARS</option>
+                    <option value="EUR">EUR</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Price Note */}
+              <div>
+                <label className="label-text">Nota de precio</label>
+                <input
+                  type="text"
+                  value={priceNote}
+                  onChange={(e) => setPriceNote(e.target.value)}
+                  placeholder="Ej: TARIFA POR PERSONA, BASE DBL"
+                  className="input-field"
+                />
+              </div>
+
+              {/* Payment Link */}
+              <div>
+                <label className="label-text">Link de pago</label>
+                <input
+                  type="url"
+                  value={paymentLink}
+                  onChange={(e) => setPaymentLink(e.target.value)}
+                  placeholder="https://..."
                   className="input-field"
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="label-text">Descripción</label>
+                <label className="label-text">Descripción adicional (opcional)</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Describe el paquete: destinos, incluye, fechas disponibles..."
-                  className="input-field min-h-[150px] resize-none"
+                  placeholder="Información adicional sobre el paquete..."
+                  className="input-field min-h-[100px] resize-none"
                 />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {description.length}/50 caracteres mínimos
-                </p>
+              </div>
+
+              {/* Disclaimer */}
+              <div>
+                <label className="label-text">Disclaimer (letra chica)</label>
+                <textarea
+                  value={disclaimer}
+                  onChange={(e) => setDisclaimer(e.target.value)}
+                  placeholder="Ej: Sujeto a disponibilidad y modificación al momento de la reserva..."
+                  className="input-field min-h-[80px] resize-none"
+                />
               </div>
 
               {/* Generate Button */}
@@ -346,8 +541,8 @@ const PackageCard = ({ pkg, onCopy, onShare, onDelete, isCopied }: PackageCardPr
       {/* Content */}
       <div className="flex-1 min-w-0">
         <h3 className="font-semibold text-navy truncate">{pkg.title}</h3>
-        <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-          {pkg.description}
+        <p className="text-sm text-muted-foreground">
+          {pkg.destination}, {pkg.country} • {pkg.nights} noches • {pkg.currency} {pkg.price}
         </p>
         
         {/* Actions */}
