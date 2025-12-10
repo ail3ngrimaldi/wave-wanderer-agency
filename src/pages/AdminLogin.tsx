@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Lock, User, Loader2, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import logoViasol from "@/assets/logo-viasol.jpeg";
+import logoViasol from "@/assets/logo-viasol.svg";
 
 const AdminLogin = () => {
   const [username, setUsername] = useState("");

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Instagram } from "lucide-react";
 import AnimatedWaves from "@/components/AnimatedWaves";
 import PackageFormModal from "@/components/PackageFormModal";
 import SuccessScreen from "@/components/SuccessScreen";
-import logoViasol from "@/assets/logo-viasol.jpeg";
+import logoViasol from "@/assets/logo-viasol.svg";
 
 interface FormData {
   telefono: string;
@@ -72,31 +73,21 @@ const Index = () => {
           <span>Pedí tu paquete personalizado</span>
         </motion.button>
 
-        {/* Features */}
-        <motion.div
+        {/* Instagram Link */}
+        <motion.a
+          href="https://www.instagram.com/viasol.ok/"
+          target="_blank"
+          rel="noopener noreferrer"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1, duration: 0.8 }}
-          className="mt-16 flex flex-wrap justify-center gap-6 md:gap-10"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          className="mt-12 flex items-center gap-2 text-navy/70 hover:text-primary transition-colors"
         >
-          {[
-            { icon: "✈️", text: "Vuelos" },
-            { icon: "🏨", text: "Hoteles" },
-            { icon: "🎯", text: "Excursiones" },
-            { icon: "🌴", text: "Paquetes" },
-          ].map((feature, index) => (
-            <motion.div
-              key={feature.text}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2 + index * 0.1 }}
-              className="flex items-center gap-2 text-navy/70"
-            >
-              <span className="text-2xl">{feature.icon}</span>
-              <span className="font-medium">{feature.text}</span>
-            </motion.div>
-          ))}
-        </motion.div>
+          <Instagram className="w-6 h-6" />
+          <span className="font-medium">@viasol.ok</span>
+        </motion.a>
       </div>
 
       {/* Modals */}
