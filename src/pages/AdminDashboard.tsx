@@ -76,9 +76,9 @@ const AdminDashboard = () => {
 
     setIsGenerating(true);
     
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
-    const id = addPackage({
+    const packageData = {
       title,
       description,
       imageUrl: imagePreview || "",
@@ -95,9 +95,15 @@ const AdminDashboard = () => {
       priceNote,
       disclaimer,
       paymentLink,
-    });
+    };
 
-    const link = `${window.location.origin}/paquete/${id}`;
+    // Also save locally for admin list
+    const id = addPackage(packageData);
+
+    // Encode package data in URL
+    const { encodePackage } = await import("@/lib/packageEncoder");
+    const encoded = encodePackage(packageData);
+    const link = `${window.location.origin}/paquete/${encoded}`;
     setGeneratedLink(link);
     setIsGenerating(false);
 
