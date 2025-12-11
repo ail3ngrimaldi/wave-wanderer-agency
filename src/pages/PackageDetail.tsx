@@ -1,14 +1,14 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Plane, Building2, Bus, CreditCard } from "lucide-react";
-import { usePackages } from "@/contexts/PackagesContext";
+import { decodePackage, EncodedPackage } from "@/lib/packageEncoder";
 import logoViasol from "@/assets/logo-viasol.svg";
 
 const PackageDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { getPackage } = usePackages();
   
-  const pkg = id ? getPackage(id) : undefined;
+  // Decode package data from URL
+  const pkg: EncodedPackage | null = id ? decodePackage(id) : null;
 
   if (!pkg) {
     return (
