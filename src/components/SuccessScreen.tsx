@@ -8,7 +8,8 @@ interface FormData {
   adultos: number;
   menores: number;
   fechaPreferencia: "fecha" | "mes" | "sin_preferencia";
-  fecha?: Date;
+  fechaInicio?: Date;
+  fechaFin?: Date;
   mes?: string;
   destino: string;
 }
@@ -29,8 +30,11 @@ const SuccessScreen = ({ isOpen, onClose, formData }: SuccessScreenProps) => {
     if (formData.fechaPreferencia === "mes" && formData.mes) {
       return formData.mes;
     }
-    if (formData.fechaPreferencia === "fecha" && formData.fecha) {
-      return format(formData.fecha, "PPP", { locale: es });
+    if (formData.fechaPreferencia === "fecha" && formData.fechaInicio) {
+      if (formData.fechaFin) {
+        return `${format(formData.fechaInicio, "dd MMM", { locale: es })} - ${format(formData.fechaFin, "dd MMM yyyy", { locale: es })}`;
+      }
+      return format(formData.fechaInicio, "PPP", { locale: es });
     }
     return "Por definir";
   };

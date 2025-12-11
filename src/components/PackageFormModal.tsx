@@ -9,15 +9,16 @@ import { es } from "date-fns/locale";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
+import { DateRange } from "react-day-picker";
 
 const formSchema = z.object({
   telefono: z.string().min(8, "Ingresa un número válido").max(20, "Número demasiado largo"),
   adultos: z.number().min(1, "Mínimo 1 adulto").max(20),
   menores: z.number().min(0).max(20),
   fechaPreferencia: z.enum(["fecha", "mes", "sin_preferencia"]),
-  fecha: z.date().optional(),
+  fechaInicio: z.date().optional(),
+  fechaFin: z.date().optional(),
   mes: z.string().optional(),
   destino: z.string().min(1, "Selecciona un destino"),
 });
@@ -46,7 +47,7 @@ const PackageFormModal = ({ isOpen, onClose, onSuccess }: PackageFormModalProps)
   const [adultos, setAdultos] = useState(1);
   const [menores, setMenores] = useState(0);
   const [fechaPreferencia, setFechaPreferencia] = useState<"fecha" | "mes" | "sin_preferencia">("fecha");
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [selectedMonth, setSelectedMonth] = useState<string>("");
 
   const { register, handleSubmit, setValue, formState: { errors }, reset } = useForm<FormData>({
@@ -66,7 +67,8 @@ const PackageFormModal = ({ isOpen, onClose, onSuccess }: PackageFormModalProps)
       adultos,
       menores,
       fechaPreferencia,
-      fecha: selectedDate,
+      fechaInicio: dateRange?.from,
+      fechaFin: dateRange?.to,
       mes: selectedMonth,
     };
 
@@ -79,7 +81,7 @@ const PackageFormModal = ({ isOpen, onClose, onSuccess }: PackageFormModalProps)
     reset();
     setAdultos(1);
     setMenores(0);
-    setSelectedDate(undefined);
+    setDateRange(undefined);
     setSelectedMonth("");
   };
 
@@ -218,7 +220,7 @@ const PackageFormModal = ({ isOpen, onClose, onSuccess }: PackageFormModalProps)
                   ))}
                 </div>
 
-                {/* Date picker */}
+                {/* Date range picker */}
                 {fechaPreferencia === "fecha" && (
                   <Popover>
                     <PopoverTrigger asChild>
@@ -226,19 +228,30 @@ const PackageFormModal = ({ isOpen, onClose, onSuccess }: PackageFormModalProps)
                         type="button"
                         className={cn(
                           "input-field text-left flex items-center justify-between",
-                          !selectedDate && "text-muted-foreground"
+                          !dateRange?.from && "text-muted-foreground"
                         )}
                       >
-                        {selectedDate ? format(selectedDate, "PPP", { locale: es }) : "Selecciona una fecha"}
+                        {dateRange?.from ? (
+                          dateRange.to ? (
+                            <>
+                              {format(dateRange.from, "dd MMM", { locale: es })} - {format(dateRange.to, "dd MMM yyyy", { locale: es })}
+                            </>
+                          ) : (
+                            format(dateRange.from, "PPP", { locale: es })
+                          )
+                        ) : (
+                          "Selecciona fechas de inicio y fin"
+                        )}
                         <Calendar className="w-4 h-4" />
                       </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 bg-card" align="start">
                       <CalendarComponent
-                        mode="single"
-                        selected={selectedDate}
-                        onSelect={setSelectedDate}
+                        mode="range"
+                        selected={dateRange}
+                        onSelect={setDateRange}
                         disabled={(date) => date < new Date()}
+                        numberOfMonths={2}
                         initialFocus
                         className="pointer-events-auto"
                       />
