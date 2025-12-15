@@ -1,16 +1,70 @@
 import { useParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Plane, Building2, Bus, CreditCard } from "lucide-react";
-import { decodePackage, EncodedPackage } from "@/lib/packageEncoder";
+import { ArrowLeft, Plane, Building2, Bus, CreditCard, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import logoViasol from "@/assets/logo-viasol.svg";
+
+interface PackageData {
+  id: string;
+  title: string;
+  description: string | null;
+  image_url: string | null;
+  destination: string;
+  country: string;
+  departure_city: string;
+  nights: number;
+  includes_flight: boolean;
+  includes_hotel: boolean;
+  includes_transfer: boolean;
+  hotel_name: string | null;
+  price: number;
+  currency: string;
+  price_note: string | null;
+  disclaimer: string | null;
+  payment_link: string | null;
+}
 
 const PackageDetail = () => {
   const { id } = useParams<{ id: string }>();
-  
-  // Decode package data from URL
-  const pkg: EncodedPackage | null = id ? decodePackage(id) : null;
+  const [pkg, setPkg] = useState<PackageData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-  if (!pkg) {
+  useEffect(() => {
+    const fetchPackage = async () => {
+      if (!id) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("packages")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+
+      if (error || !data) {
+        setNotFound(true);
+      } else {
+        setPkg(data);
+      }
+      setLoading(false);
+    };
+
+    fetchPackage();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-turquoise/10 to-turquoise/30">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (notFound || !pkg) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-turquoise/10 to-turquoise/30">
         <motion.div
@@ -41,7 +95,7 @@ const PackageDetail = () => {
       <div 
         className="absolute inset-0 bg-cover bg-center"
         style={{ 
-          backgroundImage: pkg.imageUrl ? `url(${pkg.imageUrl})` : 'linear-gradient(180deg, hsl(185 50% 40%) 0%, hsl(185 60% 30%) 100%)'
+          backgroundImage: pkg.image_url ? `url(${pkg.image_url})` : 'linear-gradient(180deg, hsl(185 50% 40%) 0%, hsl(185 60% 30%) 100%)'
         }}
       />
       
@@ -109,7 +163,7 @@ const PackageDetail = () => {
               transition={{ delay: 0.4 }}
               className="text-white/90 text-sm tracking-widest mb-2"
             >
-              SALIDA DESDE {pkg.departureCity.toUpperCase()}
+              SALIDA DESDE {pkg.departure_city.toUpperCase()}
             </motion.p>
             
             {/* Country */}
@@ -142,23 +196,23 @@ const PackageDetail = () => {
             >
               <p className="text-white text-lg font-semibold tracking-widest mb-3">INCLUYE</p>
               <div className="flex items-center justify-center gap-4">
-                {pkg.includesFlight && (
+                {pkg.includes_flight && (
                   <div className="w-14 h-14 rounded-full bg-turquoise flex items-center justify-center">
                     <Plane className="w-7 h-7 text-white" />
                   </div>
                 )}
-                {pkg.includesFlight && pkg.includesHotel && (
+                {pkg.includes_flight && pkg.includes_hotel && (
                   <span className="text-white text-2xl font-bold">+</span>
                 )}
-                {pkg.includesHotel && (
+                {pkg.includes_hotel && (
                   <div className="w-14 h-14 rounded-full bg-turquoise flex items-center justify-center">
                     <Building2 className="w-7 h-7 text-white" />
                   </div>
                 )}
-                {pkg.includesHotel && pkg.includesTransfer && (
+                {pkg.includes_hotel && pkg.includes_transfer && (
                   <span className="text-white text-2xl font-bold">+</span>
                 )}
-                {pkg.includesTransfer && (
+                {pkg.includes_transfer && (
                   <div className="w-14 h-14 rounded-full bg-turquoise flex items-center justify-center">
                     <Bus className="w-7 h-7 text-white" />
                   </div>
@@ -167,14 +221,14 @@ const PackageDetail = () => {
             </motion.div>
             
             {/* Hotel Name */}
-            {pkg.hotelName && (
+            {pkg.hotel_name && (
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
                 className="text-white/90 text-sm tracking-wider mb-4"
               >
-                {pkg.hotelName.toUpperCase()}
+                {pkg.hotel_name.toUpperCase()}
               </motion.p>
             )}
             
@@ -187,7 +241,7 @@ const PackageDetail = () => {
             >
               <p className="text-white/80 text-sm">Desde</p>
               <p className="text-4xl md:text-5xl font-black text-golden">
-                {pkg.currency} {pkg.price.toLocaleString()}
+                {pkg.currency} {Number(pkg.price).toLocaleString()}
               </p>
             </motion.div>
             
@@ -198,13 +252,13 @@ const PackageDetail = () => {
               transition={{ delay: 1 }}
               className="text-white/90 text-sm font-semibold tracking-wider mb-6"
             >
-              {pkg.priceNote || "TARIFA POR PERSONA, BASE DBL"}
+              {pkg.price_note || "TARIFA POR PERSONA, BASE DBL"}
             </motion.p>
             
             {/* Payment Button */}
-            {pkg.paymentLink && (
+            {pkg.payment_link && (
               <motion.a
-                href={pkg.paymentLink}
+                href={pkg.payment_link}
                 target="_blank"
                 rel="noopener noreferrer"
                 initial={{ opacity: 0, y: 10 }}

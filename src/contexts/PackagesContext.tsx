@@ -1,10 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./AuthContext";
 
 export interface Package {
   id: string;
   title: string;
-  description: string;
-  imageUrl: string;
+  description: string | null;
+  imageUrl: string | null;
   destination: string;
   country: string;
   departureCity: string;
@@ -12,67 +14,162 @@ export interface Package {
   includesFlight: boolean;
   includesHotel: boolean;
   includesTransfer: boolean;
-  hotelName: string;
+  hotelName: string | null;
   price: number;
   currency: string;
-  priceNote: string;
-  disclaimer: string;
-  paymentLink: string;
+  priceNote: string | null;
+  disclaimer: string | null;
+  paymentLink: string | null;
   createdAt: Date;
+  expiresAt: Date;
 }
 
 interface PackagesContextType {
   packages: Package[];
-  addPackage: (pkg: Omit<Package, "id" | "createdAt">) => string;
-  deletePackage: (id: string) => void;
-  getPackage: (id: string) => Package | undefined;
+  loading: boolean;
+  addPackage: (pkg: Omit<Package, "id" | "createdAt" | "expiresAt">) => Promise<string | null>;
+  deletePackage: (id: string) => Promise<void>;
+  getPackage: (id: string) => Promise<Package | null>;
+  refreshPackages: () => Promise<void>;
 }
 
 const PackagesContext = createContext<PackagesContextType | undefined>(undefined);
 
-const generateId = () => {
-  return Math.random().toString(36).substring(2, 10);
-};
-
 export const PackagesProvider = ({ children }: { children: ReactNode }) => {
   const [packages, setPackages] = useState<Package[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
-  useEffect(() => {
-    const stored = localStorage.getItem("viasol_packages");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      setPackages(parsed.map((pkg: Package) => ({
-        ...pkg,
-        createdAt: new Date(pkg.createdAt),
-      })));
+  const fetchPackages = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("packages")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching packages:", error);
+      setPackages([]);
+    } else {
+      setPackages(
+        data.map((pkg) => ({
+          id: pkg.id,
+          title: pkg.title,
+          description: pkg.description,
+          imageUrl: pkg.image_url,
+          destination: pkg.destination,
+          country: pkg.country,
+          departureCity: pkg.departure_city,
+          nights: pkg.nights,
+          includesFlight: pkg.includes_flight,
+          includesHotel: pkg.includes_hotel,
+          includesTransfer: pkg.includes_transfer,
+          hotelName: pkg.hotel_name,
+          price: Number(pkg.price),
+          currency: pkg.currency,
+          priceNote: pkg.price_note,
+          disclaimer: pkg.disclaimer,
+          paymentLink: pkg.payment_link,
+          createdAt: new Date(pkg.created_at),
+          expiresAt: new Date(pkg.expires_at),
+        }))
+      );
     }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("viasol_packages", JSON.stringify(packages));
-  }, [packages]);
-
-  const addPackage = (pkg: Omit<Package, "id" | "createdAt">): string => {
-    const id = generateId();
-    const newPackage: Package = {
-      ...pkg,
-      id,
-      createdAt: new Date(),
-    };
-    setPackages((prev) => [newPackage, ...prev]);
-    return id;
+    setLoading(false);
   };
 
-  const deletePackage = (id: string) => {
+  useEffect(() => {
+    if (user) {
+      fetchPackages();
+    } else {
+      setPackages([]);
+      setLoading(false);
+    }
+  }, [user]);
+
+  const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt">): Promise<string | null> => {
+    const { data, error } = await supabase
+      .from("packages")
+      .insert({
+        title: pkg.title,
+        description: pkg.description || null,
+        image_url: pkg.imageUrl || null,
+        destination: pkg.destination,
+        country: pkg.country,
+        departure_city: pkg.departureCity,
+        nights: pkg.nights,
+        includes_flight: pkg.includesFlight,
+        includes_hotel: pkg.includesHotel,
+        includes_transfer: pkg.includesTransfer,
+        hotel_name: pkg.hotelName || null,
+        price: pkg.price,
+        currency: pkg.currency,
+        price_note: pkg.priceNote || null,
+        disclaimer: pkg.disclaimer || null,
+        payment_link: pkg.paymentLink || null,
+        created_by: user?.id || null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error creating package:", error);
+      return null;
+    }
+
+    await fetchPackages();
+    return data.id;
+  };
+
+  const deletePackage = async (id: string) => {
+    const { error } = await supabase.from("packages").delete().eq("id", id);
+
+    if (error) {
+      console.error("Error deleting package:", error);
+      return;
+    }
+
     setPackages((prev) => prev.filter((pkg) => pkg.id !== id));
   };
 
-  const getPackage = (id: string) => {
-    return packages.find((pkg) => pkg.id === id);
+  const getPackage = async (id: string): Promise<Package | null> => {
+    const { data, error } = await supabase
+      .from("packages")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return {
+      id: data.id,
+      title: data.title,
+      description: data.description,
+      imageUrl: data.image_url,
+      destination: data.destination,
+      country: data.country,
+      departureCity: data.departure_city,
+      nights: data.nights,
+      includesFlight: data.includes_flight,
+      includesHotel: data.includes_hotel,
+      includesTransfer: data.includes_transfer,
+      hotelName: data.hotel_name,
+      price: Number(data.price),
+      currency: data.currency,
+      priceNote: data.price_note,
+      disclaimer: data.disclaimer,
+      paymentLink: data.payment_link,
+      createdAt: new Date(data.created_at),
+      expiresAt: new Date(data.expires_at),
+    };
   };
 
   return (
-    <PackagesContext.Provider value={{ packages, addPackage, deletePackage, getPackage }}>
+    <PackagesContext.Provider
+      value={{ packages, loading, addPackage, deletePackage, getPackage, refreshPackages: fetchPackages }}
+    >
       {children}
     </PackagesContext.Provider>
   );

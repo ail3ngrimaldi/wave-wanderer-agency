@@ -13,7 +13,7 @@ import logoViasol from "@/assets/logo-viasol.svg";
 
 const AdminDashboard = () => {
   const { logout } = useAuth();
-  const { packages, addPackage, deletePackage } = usePackages();
+  const { packages, loading, addPackage, deletePackage } = usePackages();
   const navigate = useNavigate();
   
   const [title, setTitle] = useState("");
@@ -75,13 +75,11 @@ const AdminDashboard = () => {
     }
 
     setIsGenerating(true);
-    
-    await new Promise((resolve) => setTimeout(resolve, 500));
 
     const packageData = {
       title,
       description,
-      imageUrl: imagePreview || "",
+      imageUrl: imagePreview || null,
       destination,
       country,
       departureCity,
@@ -89,23 +87,28 @@ const AdminDashboard = () => {
       includesFlight,
       includesHotel,
       includesTransfer,
-      hotelName,
+      hotelName: hotelName || null,
       price,
       currency,
-      priceNote,
-      disclaimer,
-      paymentLink,
+      priceNote: priceNote || null,
+      disclaimer: disclaimer || null,
+      paymentLink: paymentLink || null,
     };
 
-    // Also save locally for admin list
-    const id = addPackage(packageData);
-
-    // Encode package data in URL
-    const { encodePackage } = await import("@/lib/packageEncoder");
-    const encoded = encodePackage(packageData);
-    const link = `${window.location.origin}/paquete/${encoded}`;
-    setGeneratedLink(link);
+    const id = await addPackage(packageData);
     setIsGenerating(false);
+
+    if (!id) {
+      toast({
+        title: "Error",
+        description: "No se pudo crear el paquete. Intenta de nuevo.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const link = `${window.location.origin}/paquete/${id}`;
+    setGeneratedLink(link);
 
     toast({
       title: "¡Paquete creado!",
@@ -161,8 +164,8 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDelete = (id: string) => {
-    deletePackage(id);
+  const handleDelete = async (id: string) => {
+    await deletePackage(id);
     toast({
       title: "Paquete eliminado",
       description: "El paquete ha sido eliminado correctamente",
@@ -488,7 +491,12 @@ const AdminDashboard = () => {
               Paquetes creados ({packages.length})
             </h2>
 
-            {packages.length === 0 ? (
+            {loading ? (
+              <div className="text-center py-12">
+                <Loader2 className="w-8 h-8 mx-auto animate-spin text-primary" />
+                <p className="text-muted-foreground mt-2">Cargando paquetes...</p>
+              </div>
+            ) : packages.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p>Aún no has creado ningún paquete</p>
