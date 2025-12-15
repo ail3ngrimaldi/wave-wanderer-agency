@@ -1,36 +1,62 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Lock, User, Loader2, AlertCircle } from "lucide-react";
+import { Lock, Mail, Loader2, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import logoViasol from "@/assets/logo-viasol.svg";
 
 const AdminLogin = () => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isAuthenticated, isAdmin, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already authenticated as admin
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && isAdmin) {
+      navigate("/admin/dashboard");
+    }
+  }, [isAuthenticated, isAdmin, authLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    const success = login(username, password);
+    const { error: loginError } = await login(email, password);
     
-    if (success) {
-      navigate("/admin/dashboard");
-    } else {
-      setError("Usuario o contraseña incorrectos");
+    if (loginError) {
+      setError(getErrorMessage(loginError));
+      setIsLoading(false);
+      return;
     }
-    
-    setIsLoading(false);
+
+    // Wait a moment for role check to complete
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
   };
+
+  const getErrorMessage = (error: string): string => {
+    if (error.includes("Invalid login credentials")) {
+      return "Correo o contraseña incorrectos";
+    }
+    if (error.includes("Email not confirmed")) {
+      return "Por favor confirma tu correo electrónico";
+    }
+    return "Error al iniciar sesión. Intenta de nuevo.";
+  };
+
+  // Show loading while checking auth state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(180deg, hsl(185 40% 96%) 0%, hsl(185 50% 90%) 100%)' }}>
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(180deg, hsl(185 40% 96%) 0%, hsl(185 50% 90%) 100%)' }}>
@@ -58,17 +84,17 @@ const AdminLogin = () => {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Username */}
+            {/* Email */}
             <div>
               <label className="label-text flex items-center gap-2">
-                <User className="w-4 h-4 text-primary" />
-                Usuario
+                <Mail className="w-4 h-4 text-primary" />
+                Correo electrónico
               </label>
               <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Ingresa tu usuario"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@viasol.com"
                 className="input-field"
                 required
               />
@@ -87,6 +113,7 @@ const AdminLogin = () => {
                 placeholder="Ingresa tu contraseña"
                 className="input-field"
                 required
+                minLength={6}
               />
             </div>
 
