@@ -14,6 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
+      packages: {
+        Row: {
+          country: string
+          created_at: string
+          created_by: string | null
+          currency: string
+          departure_city: string
+          description: string | null
+          destination: string
+          disclaimer: string | null
+          expires_at: string
+          hotel_name: string | null
+          id: string
+          image_url: string | null
+          includes_flight: boolean
+          includes_hotel: boolean
+          includes_transfer: boolean
+          nights: number
+          payment_link: string | null
+          price: number
+          price_note: string | null
+          title: string
+        }
+        Insert: {
+          country: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          departure_city: string
+          description?: string | null
+          destination: string
+          disclaimer?: string | null
+          expires_at?: string
+          hotel_name?: string | null
+          id?: string
+          image_url?: string | null
+          includes_flight?: boolean
+          includes_hotel?: boolean
+          includes_transfer?: boolean
+          nights?: number
+          payment_link?: string | null
+          price: number
+          price_note?: string | null
+          title: string
+        }
+        Update: {
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          departure_city?: string
+          description?: string | null
+          destination?: string
+          disclaimer?: string | null
+          expires_at?: string
+          hotel_name?: string | null
+          id?: string
+          image_url?: string | null
+          includes_flight?: boolean
+          includes_hotel?: boolean
+          includes_transfer?: boolean
+          nights?: number
+          payment_link?: string | null
+          price?: number
+          price_note?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -40,6 +109,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_expired_packages: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
