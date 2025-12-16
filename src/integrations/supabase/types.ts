@@ -106,7 +106,69 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      packages_public: {
+        Row: {
+          country: string | null
+          created_at: string | null
+          currency: string | null
+          departure_city: string | null
+          description: string | null
+          destination: string | null
+          disclaimer: string | null
+          expires_at: string | null
+          hotel_name: string | null
+          id: string | null
+          image_url: string | null
+          includes_flight: boolean | null
+          includes_hotel: boolean | null
+          includes_transfer: boolean | null
+          nights: number | null
+          price: number | null
+          price_note: string | null
+          title: string | null
+        }
+        Insert: {
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          departure_city?: string | null
+          description?: string | null
+          destination?: string | null
+          disclaimer?: string | null
+          expires_at?: string | null
+          hotel_name?: string | null
+          id?: string | null
+          image_url?: string | null
+          includes_flight?: boolean | null
+          includes_hotel?: boolean | null
+          includes_transfer?: boolean | null
+          nights?: number | null
+          price?: number | null
+          price_note?: string | null
+          title?: string | null
+        }
+        Update: {
+          country?: string | null
+          created_at?: string | null
+          currency?: string | null
+          departure_city?: string | null
+          description?: string | null
+          destination?: string | null
+          disclaimer?: string | null
+          expires_at?: string | null
+          hotel_name?: string | null
+          id?: string | null
+          image_url?: string | null
+          includes_flight?: boolean | null
+          includes_hotel?: boolean | null
+          includes_transfer?: boolean | null
+          nights?: number | null
+          price?: number | null
+          price_note?: string | null
+          title?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       delete_expired_packages: { Args: never; Returns: undefined }
