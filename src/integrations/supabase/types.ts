@@ -123,6 +123,7 @@ export type Database = {
           includes_hotel: boolean | null
           includes_transfer: boolean | null
           nights: number | null
+          payment_link: string | null
           price: number | null
           price_note: string | null
           title: string | null
@@ -143,6 +144,7 @@ export type Database = {
           includes_hotel?: boolean | null
           includes_transfer?: boolean | null
           nights?: number | null
+          payment_link?: string | null
           price?: number | null
           price_note?: string | null
           title?: string | null
@@ -163,6 +165,7 @@ export type Database = {
           includes_hotel?: boolean | null
           includes_transfer?: boolean | null
           nights?: number | null
+          payment_link?: string | null
           price?: number | null
           price_note?: string | null
           title?: string | null
