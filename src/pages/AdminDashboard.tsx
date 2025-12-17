@@ -4,12 +4,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   LogOut, Upload, Link as LinkIcon, Copy, Share2, Trash2, 
   Image as ImageIcon, CheckCircle, Loader2, ExternalLink,
-  Plane, Building2, Bus
+  Plane, Building2, Bus, Calendar
 } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePackages, Package } from "@/contexts/PackagesContext";
 import { toast } from "@/hooks/use-toast";
 import logoViasol from "@/assets/logo-viasol.svg";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 const AdminDashboard = () => {
   const { logout } = useAuth();
@@ -32,6 +37,8 @@ const AdminDashboard = () => {
   const [priceNote, setPriceNote] = useState("TARIFA POR PERSONA, BASE DBL");
   const [disclaimer, setDisclaimer] = useState("");
   const [paymentLink, setPaymentLink] = useState("");
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
   
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
@@ -93,6 +100,8 @@ const AdminDashboard = () => {
       priceNote: priceNote || null,
       disclaimer: disclaimer || null,
       paymentLink: paymentLink || null,
+      startDate: startDate || null,
+      endDate: endDate || null,
     };
 
     const id = await addPackage(packageData);
@@ -132,6 +141,8 @@ const AdminDashboard = () => {
     setPriceNote("TARIFA POR PERSONA, BASE DBL");
     setDisclaimer("");
     setPaymentLink("");
+    setStartDate(undefined);
+    setEndDate(undefined);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -297,6 +308,69 @@ const AdminDashboard = () => {
                     min={1}
                     className="input-field"
                   />
+                </div>
+              </div>
+
+              {/* Package Dates */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="label-text flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-primary" />
+                    Fecha inicio
+                  </label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className={cn(
+                          "input-field text-left flex items-center justify-between",
+                          !startDate && "text-muted-foreground"
+                        )}
+                      >
+                        {startDate ? format(startDate, "dd/MM/yyyy", { locale: es }) : "Seleccionar"}
+                        <Calendar className="w-4 h-4" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-card" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={startDate}
+                        onSelect={setStartDate}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div>
+                  <label className="label-text flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-primary" />
+                    Fecha fin
+                  </label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className={cn(
+                          "input-field text-left flex items-center justify-between",
+                          !endDate && "text-muted-foreground"
+                        )}
+                      >
+                        {endDate ? format(endDate, "dd/MM/yyyy", { locale: es }) : "Seleccionar"}
+                        <Calendar className="w-4 h-4" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-card" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={endDate}
+                        onSelect={setEndDate}
+                        disabled={(date) => startDate ? date < startDate : false}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
 

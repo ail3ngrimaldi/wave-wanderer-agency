@@ -24,6 +24,7 @@ export type Database = {
           description: string | null
           destination: string
           disclaimer: string | null
+          end_date: string | null
           expires_at: string
           hotel_name: string | null
           id: string
@@ -35,6 +36,7 @@ export type Database = {
           payment_link: string | null
           price: number
           price_note: string | null
+          start_date: string | null
           title: string
         }
         Insert: {
@@ -46,6 +48,7 @@ export type Database = {
           description?: string | null
           destination: string
           disclaimer?: string | null
+          end_date?: string | null
           expires_at?: string
           hotel_name?: string | null
           id?: string
@@ -57,6 +60,7 @@ export type Database = {
           payment_link?: string | null
           price: number
           price_note?: string | null
+          start_date?: string | null
           title: string
         }
         Update: {
@@ -68,6 +72,7 @@ export type Database = {
           description?: string | null
           destination?: string
           disclaimer?: string | null
+          end_date?: string | null
           expires_at?: string
           hotel_name?: string | null
           id?: string
@@ -79,6 +84,7 @@ export type Database = {
           payment_link?: string | null
           price?: number
           price_note?: string | null
+          start_date?: string | null
           title?: string
         }
         Relationships: []
@@ -115,6 +121,7 @@ export type Database = {
           description: string | null
           destination: string | null
           disclaimer: string | null
+          end_date: string | null
           expires_at: string | null
           hotel_name: string | null
           id: string | null
@@ -126,6 +133,7 @@ export type Database = {
           payment_link: string | null
           price: number | null
           price_note: string | null
+          start_date: string | null
           title: string | null
         }
         Insert: {
@@ -136,6 +144,7 @@ export type Database = {
           description?: string | null
           destination?: string | null
           disclaimer?: string | null
+          end_date?: string | null
           expires_at?: string | null
           hotel_name?: string | null
           id?: string | null
@@ -147,6 +156,7 @@ export type Database = {
           payment_link?: string | null
           price?: number | null
           price_note?: string | null
+          start_date?: string | null
           title?: string | null
         }
         Update: {
@@ -157,6 +167,7 @@ export type Database = {
           description?: string | null
           destination?: string | null
           disclaimer?: string | null
+          end_date?: string | null
           expires_at?: string | null
           hotel_name?: string | null
           id?: string | null
@@ -168,6 +179,7 @@ export type Database = {
           payment_link?: string | null
           price?: number | null
           price_note?: string | null
+          start_date?: string | null
           title?: string | null
         }
         Relationships: []

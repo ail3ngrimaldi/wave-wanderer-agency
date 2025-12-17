@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Instagram } from "lucide-react";
+import { FaTiktok } from "react-icons/fa";
 import AnimatedWaves from "@/components/AnimatedWaves";
 import PackageFormModal from "@/components/PackageFormModal";
 import SuccessScreen from "@/components/SuccessScreen";
@@ -73,21 +74,57 @@ const Index = () => {
           <span>Pedí tu paquete personalizado</span>
         </motion.button>
 
-        {/* Instagram Link */}
-        <motion.a
-          href="https://www.instagram.com/viasol.ok/"
-          target="_blank"
-          rel="noopener noreferrer"
+        {/* Social Links */}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1, duration: 0.8 }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          className="mt-12 flex items-center gap-2 text-navy/70 hover:text-primary transition-colors"
+          className="mt-12 flex items-center gap-6"
         >
-          <Instagram className="w-6 h-6" />
-          <span className="font-medium">@viasol.ok</span>
-        </motion.a>
+          <motion.a
+            href="https://www.instagram.com/viasol.ok/"
+            target="_blank"
+            rel="noopener noreferrer"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-2 text-navy/70 hover:text-primary transition-colors"
+          >
+            <Instagram className="w-6 h-6" />
+            <span className="font-medium">@viasol.ok</span>
+          </motion.a>
+          
+          <motion.a
+            href="https://www.tiktok.com/@viasol.viajes.con"
+            target="_blank"
+            rel="noopener noreferrer"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-2 text-navy/70 hover:text-primary transition-colors"
+          >
+            <FaTiktok className="w-5 h-5" />
+            <span className="font-medium">@viasol.viajes.con</span>
+          </motion.a>
+        </motion.div>
+
+        {/* Footer */}
+        <motion.footer
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2, duration: 0.8 }}
+          className="mt-16 text-center text-navy/60 text-sm"
+        >
+          <p>
+            Organizamos los viajes de{" "}
+            <a
+              href="https://www.instagram.com/familia.viajera.ok/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary font-semibold hover:underline"
+            >
+              familia viajera
+            </a>
+          </p>
+        </motion.footer>
       </div>
 
       {/* Modals */}

@@ -20,6 +20,8 @@ export interface Package {
   priceNote: string | null;
   disclaimer: string | null;
   paymentLink: string | null;
+  startDate: Date | null;
+  endDate: Date | null;
   createdAt: Date;
   expiresAt: Date;
 }
@@ -70,6 +72,8 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
           priceNote: pkg.price_note,
           disclaimer: pkg.disclaimer,
           paymentLink: pkg.payment_link,
+          startDate: pkg.start_date ? new Date(pkg.start_date) : null,
+          endDate: pkg.end_date ? new Date(pkg.end_date) : null,
           createdAt: new Date(pkg.created_at),
           expiresAt: new Date(pkg.expires_at),
         }))
@@ -107,6 +111,8 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
         price_note: pkg.priceNote || null,
         disclaimer: pkg.disclaimer || null,
         payment_link: pkg.paymentLink || null,
+        start_date: pkg.startDate ? pkg.startDate.toISOString().split('T')[0] : null,
+        end_date: pkg.endDate ? pkg.endDate.toISOString().split('T')[0] : null,
         created_by: user?.id || null,
       })
       .select()
@@ -161,6 +167,8 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
       priceNote: data.price_note,
       disclaimer: data.disclaimer,
       paymentLink: data.payment_link,
+      startDate: data.start_date ? new Date(data.start_date) : null,
+      endDate: data.end_date ? new Date(data.end_date) : null,
       createdAt: new Date(data.created_at),
       expiresAt: new Date(data.expires_at),
     };
