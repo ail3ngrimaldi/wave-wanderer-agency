@@ -32,9 +32,8 @@ interface PackageFormModalProps {
 }
 
 const destinations = {
-  "Por continente": ["África", "América del Norte", "América del Sur", "América Central", "Asia", "Europa", "Oceanía"],
-  "Multidestino": ["Europa + Asia", "América completa", "Vuelta al mundo"],
-  "Destinos populares": ["Cancún", "París", "Roma", "Tokio", "Nueva York", "Maldivas", "Tailandia", "Grecia", "Dubai", "Machu Picchu"],
+  "Argentina": ["Bariloche", "Córdoba", "Corrientes", "El Calafate", "Jujuy", "Mendoza", "Neuquén", "Posadas", "Puerto Iguazú", "Salta", "San Juan", "Santiago del Estero", "Tucumán", "Ushuaia"],
+  "Brasil": ["Nordeste", "Rio de Janeiro", "Florianópolis"],
 };
 
 const months = [
