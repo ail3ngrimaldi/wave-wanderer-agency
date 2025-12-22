@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { FormStepIndicator } from './FormStepIndicator'; // Ensure this path is correct
+import { FormStepIndicator } from './FormStepIndicator';
 import { GeneralInfoStep } from './GeneralInfoStep';
 import { HotelDetailsStep } from './HotelDetailsStep';
 import { FlightDetailsStep } from './FlightDetailsStep';
@@ -8,6 +8,7 @@ import { PackageFormData, DEFAULT_FORM_DATA, ExtendedPackage } from '@/types/pac
 import { ChevronLeft, ChevronRight, Check, X, Loader2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { differenceInDays } from 'date-fns';
 
 const STEPS = [
   { id: 1, title: 'General', description: 'Información básica' },
@@ -36,6 +37,20 @@ export function MultiStepPackageForm({
   });
   const [errors, setErrors] = useState<Partial<Record<keyof PackageFormData, string>>>({});
 
+  useEffect(() => {
+    if (formData.startDate && formData.endDate) {
+      const days = differenceInDays(formData.endDate, formData.startDate);
+      // Only update if the calculated days are different from current nights
+      // and ensuring we don't set negative numbers
+      if (days > 0 && days !== formData.nights) {
+        setFormData((prev) => ({ ...prev, nights: days }));
+        
+        // We can notify the user that the nights had been updated but it might be too much.
+        // toast({ title: "Noches actualizadas", description: `Se calcularon ${days} noches.` });
+      }
+    }
+  }, [formData.startDate, formData.endDate]);
+
   const handleChange = useCallback((field: keyof PackageFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
@@ -51,6 +66,7 @@ export function MultiStepPackageForm({
       if (!formData.destination.trim()) newErrors.destination = 'El destino es requerido';
       if (!formData.country.trim()) newErrors.country = 'El país es requerido';
       if (formData.price <= 0) newErrors.price = 'El precio debe ser mayor a 0';
+      if (!formData.nights || formData.nights < 1) newErrors.nights = 'Mínimo 1 noche';
     }
 
     if (step === 1 && formData.includesHotel) {
