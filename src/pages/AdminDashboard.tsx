@@ -7,7 +7,7 @@ import { usePackages, Package } from "@/contexts/PackagesContext";
 import { toast } from "@/hooks/use-toast";
 import logoViasol from "@/assets/logo-viasol.svg";
 // Import the new form
-import { MultiStepPackageForm } from "./admin/MultiStepPackageForm"; // Adjust path as needed
+import { MultiStepPackageForm } from "./MultiStepPackageForm";
 
 const AdminDashboard = () => {
   const { logout } = useAuth();
