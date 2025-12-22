@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Plane, Building2, Bus, CreditCard, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import logoViasol from "@/assets/logo-viasol.svg";
+import { FlightInfo } from "@/components/packages/FlightInfo";
+import { HotelInfo } from "@/components/packages/HotelInfo";
 
 interface PackageData {
   id: string;
@@ -14,10 +16,25 @@ interface PackageData {
   country: string;
   departure_city: string;
   nights: number;
+  
   includes_flight: boolean;
   includes_hotel: boolean;
   includes_transfer: boolean;
+  
+  // Hotel Details (Snake Case from DB)
   hotel_name: string | null;
+  room_type: string | null;
+  meal_plan: string | null;
+
+  // Flight Details (Snake Case from DB)
+  airline: string | null;
+  departure_airport: string | null;
+  arrival_airport: string | null;
+  outbound_departure_time: string | null;
+  outbound_arrival_time: string | null;
+  return_departure_time: string | null;
+  return_arrival_time: string | null;
+
   price: number;
   currency: string;
   price_note: string | null;
@@ -134,9 +151,9 @@ const PackageDetail = () => {
             className="max-w-md w-full"
           >
           {/* Main Title - ESCAPADA or VACACIONES based on nights */}
-            <motion.h1
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+            <motion.h1 
+              initial={{ opacity: 0, scale: 0.9 }} 
+              animate={{ opacity: 1, scale: 1 }} 
               transition={{ delay: 0.2 }}
               className="text-5xl md:text-6xl font-black text-white drop-shadow-lg mb-1"
               style={{ fontFamily: "'Bebas Neue', 'Impact', sans-serif", letterSpacing: '0.05em' }}
@@ -145,25 +162,25 @@ const PackageDetail = () => {
             </motion.h1>
             
             {/* "en" text */}
-            <motion.p
+            <motion.p 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.25 }}
-              className="text-white/80 text-lg mb-2"
+              className="text-white/80 text-lg mb-2" 
               style={{ fontFamily: "'Bebas Neue', 'Impact', sans-serif" }}
             >
               en
             </motion.p>
             
             {/* Destination - Light pink color from logo */}
-            <motion.div
+            <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
               className="mb-2"
             >
               <span 
-                className="inline-block px-6 py-2 bg-navy/80 text-2xl md:text-3xl font-bold rounded-lg"
+                className="inline-block px-6 py-2 bg-navy/80 text-2xl md:text-3xl font-bold rounded-lg" 
                 style={{ color: 'hsl(4, 60%, 75%)' }}
               >
                 {pkg.destination.toUpperCase()}
@@ -171,7 +188,7 @@ const PackageDetail = () => {
             </motion.div>
             
             {/* Departure City */}
-            <motion.p
+            <motion.p 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
@@ -181,18 +198,18 @@ const PackageDetail = () => {
             </motion.p>
             
             {/* Country */}
-            <motion.h2
+            <motion.h2 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="text-3xl md:text-4xl font-bold text-white mb-1"
+              className="text-3xl md:text-4xl font-bold text-white mb-1" 
               style={{ fontFamily: "'Bebas Neue', 'Impact', sans-serif" }}
             >
               {pkg.country.toUpperCase()}
             </motion.h2>
             
             {/* Nights */}
-            <motion.p
+            <motion.p 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
@@ -201,7 +218,7 @@ const PackageDetail = () => {
               {pkg.nights} NOCHES
             </motion.p>
             
-            {/* Includes Section */}
+            {/* Includes Section - UPDATED WITH FLIGHT/HOTEL INFO COMPONENTS */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -210,33 +227,50 @@ const PackageDetail = () => {
             >
               <p className="text-white text-lg font-semibold tracking-widest mb-3">INCLUYE</p>
               <div className="flex items-center justify-center gap-4">
+                
+                {/* 1. FLIGHT */}
                 {pkg.includes_flight && (
-                  <div className="w-14 h-14 rounded-full bg-turquoise flex items-center justify-center">
-                    <Plane className="w-7 h-7 text-white" />
-                  </div>
+                  <FlightInfo 
+                    airline={pkg.airline}
+                    departureAirport={pkg.departure_airport}
+                    arrivalAirport={pkg.arrival_airport}
+                    outboundDepartureTime={pkg.outbound_departure_time}
+                    outboundArrivalTime={pkg.outbound_arrival_time}
+                    returnDepartureTime={pkg.return_departure_time}
+                    returnArrivalTime={pkg.return_arrival_time}
+                  />
                 )}
+
                 {pkg.includes_flight && pkg.includes_hotel && (
                   <span className="text-white text-2xl font-bold">+</span>
                 )}
+
+                {/* 2. HOTEL */}
                 {pkg.includes_hotel && (
-                  <div className="w-14 h-14 rounded-full bg-turquoise flex items-center justify-center">
-                    <Building2 className="w-7 h-7 text-white" />
-                  </div>
+                    <HotelInfo 
+                        hotelName={pkg.hotel_name}
+                        roomType={pkg.room_type}
+                        mealPlan={pkg.meal_plan}
+                        nights={pkg.nights}
+                    />
                 )}
+
                 {pkg.includes_hotel && pkg.includes_transfer && (
                   <span className="text-white text-2xl font-bold">+</span>
                 )}
+
+                {/* 3. TRANSFER - Standard Icon */}
                 {pkg.includes_transfer && (
-                  <div className="w-14 h-14 rounded-full bg-turquoise flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-turquoise flex items-center justify-center shadow-lg">
                     <Bus className="w-7 h-7 text-white" />
                   </div>
                 )}
               </div>
             </motion.div>
             
-            {/* Hotel Name */}
+            {/* Hotel Name (Still showing this text below the icons as a secondary confirmation) */}
             {pkg.hotel_name && (
-              <motion.p
+              <motion.p 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8 }}
@@ -247,9 +281,9 @@ const PackageDetail = () => {
             )}
             
             {/* Price */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }} 
+              animate={{ opacity: 1, scale: 1 }} 
               transition={{ delay: 0.9 }}
               className="mb-2"
             >
@@ -260,7 +294,7 @@ const PackageDetail = () => {
             </motion.div>
             
             {/* Price Note */}
-            <motion.p
+            <motion.p 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1 }}
@@ -271,7 +305,7 @@ const PackageDetail = () => {
             
             {/* Payment Button */}
             {pkg.payment_link && (
-              <motion.a
+              <motion.a 
                 href={pkg.payment_link}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -291,7 +325,7 @@ const PackageDetail = () => {
         
         {/* Footer with disclaimer */}
         {pkg.disclaimer && (
-          <motion.footer
+          <motion.footer 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2 }}
