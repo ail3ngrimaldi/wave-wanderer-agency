@@ -58,7 +58,7 @@ const Index = () => {
           transition={{ delay: 0.4, duration: 0.6 }}
           className="text-lg md:text-xl text-navy/80 text-center mb-10 max-w-md font-medium"
         >
-          Tu próxima aventura comienza aquí
+          Tu próxima experiencia comienza acá
         </motion.p>
 
         {/* CTA Button */}
