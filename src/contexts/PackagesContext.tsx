@@ -48,7 +48,7 @@ export interface Package {
 interface PackagesContextType {
   packages: Package[];
   loading: boolean;
-  addPackage: (pkg: Omit<Package, "id" | "createdAt" | "expiresAt">) => Promise<string | null>;
+  addPackage: (pkg: Omit<Package, "id" | "createdAt" | "expiresAt" | "slug">) => Promise<string | null>;
   deletePackage: (id: string) => Promise<void>;
   getPackage: (id: string) => Promise<Package | null>;
   refreshPackages: () => Promise<void>;
