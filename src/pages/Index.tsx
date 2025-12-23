@@ -113,18 +113,19 @@ const Index = () => {
           transition={{ delay: 1.2, duration: 0.8 }}
           className="mt-16 text-center text-navy/60 text-sm"
         >
-          <p>
-            Organizamos los viajes de{" "}
-            <Instagram className="w-6 h-6" />
+          <div className="flex items-center justify-center gap-1">
+            <span>Organizamos los viajes de</span>
             <a
               href="https://www.instagram.com/familia.viajera.ok/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary font-semibold hover:underline"
+              className="flex items-center gap-1 text-primary font-semibold hover:underline"
             >
+              {/* Icon is now size w-4 (16px) to match text-sm (14px) better */}
+              <Instagram className="w-4 h-4" /> 
               familia viajera
             </a>
-          </p>
+          </div>
         </motion.footer>
       </div>
 
