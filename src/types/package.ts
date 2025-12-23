@@ -80,6 +80,7 @@ export const DEFAULT_FORM_DATA: PackageFormData = {
   includesHotel: true,
   includesTransfer: true,
   hotelName: '',
+  accomodationType: 'hotel',
   roomType: 'standard',
   mealPlan: 'breakfast',
   airline: '',
