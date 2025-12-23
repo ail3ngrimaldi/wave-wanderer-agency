@@ -5,6 +5,7 @@ import { useAuth } from "./AuthContext";
 // We update the interface to include the new fields
 export interface Package {
   id: string;
+  slug: string;
   title: string;
   description: string | null;
   imageUrl: string | null;
