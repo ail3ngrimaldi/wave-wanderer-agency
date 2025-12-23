@@ -71,6 +71,7 @@ export function MultiStepPackageForm({
 
     if (step === 1 && formData.includesHotel) {
       if (!formData.hotelName.trim()) newErrors.hotelName = 'El nombre del hotel es requerido';
+      if (!formData.accomodationType) newErrors.accomodationType = 'Requerido';
     }
 
     if (step === 2 && formData.includesFlight) {
