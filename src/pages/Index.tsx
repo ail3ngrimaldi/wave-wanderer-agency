@@ -115,6 +115,7 @@ const Index = () => {
         >
           <p>
             Organizamos los viajes de{" "}
+            <Instagram className="w-6 h-6" />
             <a
               href="https://www.instagram.com/familia.viajera.ok/"
               target="_blank"
