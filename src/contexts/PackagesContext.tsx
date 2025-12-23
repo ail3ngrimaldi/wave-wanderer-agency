@@ -205,6 +205,7 @@ const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt" | 
 
     return {
       id: data.id,
+      slug: data.slug,
       title: data.title,
       description: data.description,
       imageUrl: data.image_url,
