@@ -29,8 +29,9 @@ export interface Package {
 
   // Hotel Details
   hotelName: string | null;
-  roomType: string | null; // New
-  mealPlan: string | null; // New
+  accommodationType: string | null;
+  roomType: string | null;
+  mealPlan: string | null;
 
   // Flight Details
   airline: string | null; // New
@@ -87,6 +88,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
           includesHotel: pkg.includes_hotel,
           includesTransfer: pkg.includes_transfer,
           hotelName: pkg.hotel_name,
+          accommodationType: pkg.accommodation_type,
           
           // Map new fields from DB (snake_case) to Frontend (camelCase)
           roomType: pkg.room_type,
@@ -146,9 +148,9 @@ const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt" | 
         includes_transfer: pkg.includesTransfer,
         
         hotel_name: pkg.hotelName || null,
+        accommodation_type: pkg.accommodationType || null,
         room_type: pkg.roomType || null,
         meal_plan: pkg.mealPlan || null,
-        accommodation_type: pkg.accommodationType || 'hotel',
 
         airline: pkg.airline || null,
         departure_airport: pkg.departureAirport || null,
@@ -217,6 +219,7 @@ const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt" | 
       includesHotel: data.includes_hotel,
       includesTransfer: data.includes_transfer,
       hotelName: data.hotel_name,
+      accommodationType: data.accommodation_type,
       
       // New fields
       roomType: data.room_type,
