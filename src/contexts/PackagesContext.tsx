@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
+import { generateSlug } from "@/utils/slugs";
 
 // We update the interface to include the new fields
 export interface Package {
@@ -74,6 +75,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
       setPackages(
         data.map((pkg) => ({
           id: pkg.id,
+          slug: pkg.slug,
           title: pkg.title,
           description: pkg.description,
           imageUrl: pkg.image_url,
@@ -121,11 +123,17 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
-  const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt">): Promise<string | null> => {
-    // We map Frontend (camelCase) to DB (snake_case)
+const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt" | "slug">): Promise<string | null> => {
+    // 1. Generate the slug from the title
+    const slug = generateSlug(pkg.title); 
+
     const { data, error } = await supabase
       .from("packages")
       .insert({
+        // 2. Add the slug to the insert object
+        slug: slug, 
+        
+        // ... mapped fields ...
         title: pkg.title,
         description: pkg.description || null,
         image_url: pkg.imageUrl || null,
@@ -137,12 +145,11 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
         includes_hotel: pkg.includesHotel,
         includes_transfer: pkg.includesTransfer,
         
-        // Hotel
         hotel_name: pkg.hotelName || null,
         room_type: pkg.roomType || null,
         meal_plan: pkg.mealPlan || null,
+        accommodation_type: pkg.accommodationType || 'hotel',
 
-        // Flight
         airline: pkg.airline || null,
         departure_airport: pkg.departureAirport || null,
         arrival_airport: pkg.arrivalAirport || null,
@@ -169,7 +176,9 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
     }
 
     await fetchPackages();
-    return data.id;
+    
+    // 3. Return the SLUG (not the ID) so AdminDashboard can make the link
+    return data.slug; 
   };
 
   const deletePackage = async (id: string) => {
