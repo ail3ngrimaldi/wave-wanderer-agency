@@ -6,7 +6,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePackages, Package } from "@/contexts/PackagesContext";
 import { toast } from "@/hooks/use-toast";
 import logoViasol from "@/assets/logo-viasol.svg";
-// Import the new form
 import { MultiStepPackageForm } from "./MultiStepPackageForm";
 
 const AdminDashboard = () => {
