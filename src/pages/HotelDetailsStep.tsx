@@ -1,8 +1,7 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PackageFormData, RoomType, MealPlan, AccomodationType, ROOM_TYPE_LABELS, MEAL_PLAN_LABELS, ACCOMODATION_TYPE_LABELS } from '@/types/package'; // AGREGAR AccomodationType y ACCOMODATION_TYPE_LABELS
-import { Building2, BedDouble, UtensilsCrossed, AlertCircle } from 'lucide-react';
+import { PackageFormData, RoomType, MealPlan, AccommodationType, ROOM_TYPE_LABELS, MEAL_PLAN_LABELS, ACCOMMODATION_TYPE_LABELS } from '@/types/package';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface HotelDetailsStepProps {
@@ -32,37 +31,37 @@ export function HotelDetailsStep({ formData, onChange, errors }: HotelDetailsSte
 
       {/* NUEVO: Tipo de Alojamiento */}
        <div className="space-y-2">
-        <Label htmlFor="accomodationType" className="flex items-center gap-2">
+        <Label htmlFor="accommodationType" className="flex items-center gap-2">
           <Home className="w-4 h-4" />
           Tipo de Alojamiento *
         </Label>
         <Select
-          value={formData.accomodationType}
-          onValueChange={(value: AccomodationType) => onChange('accomodationType', value)}
+          value={formData.accommodationType}
+          onValueChange={(value: AccommodationType) => onChange('accommodationType', value)}
         >
-          <SelectTrigger className={errors.accomodationType ? 'border-destructive' : ''}>
+          <SelectTrigger className={errors.accommodationType ? 'border-destructive' : ''}>
             <SelectValue placeholder="Seleccionar tipo de alojamiento" />
           </SelectTrigger>
           <SelectContent>
-            {(Object.keys(ACCOMODATION_TYPE_LABELS) as AccomodationType[]).map((type) => (
+            {(Object.keys(ACCOMMODATION_TYPE_LABELS) as AccommodationType[]).map((type) => (
               <SelectItem key={type} value={type}>
-                {ACCOMODATION_TYPE_LABELS[type]}
+                {ACCOMMODATION_TYPE_LABELS[type]}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        {errors.accomodationType && <p className="text-sm text-destructive">{errors.accomodationType}</p>}
+        {errors.accommodationType && <p className="text-sm text-destructive">{errors.accommodationType}</p>}
       </div>
       
       {/* Hotel Name */}
       <div className="space-y-2">
         <Label htmlFor="hotelName" className="flex items-center gap-2">
           <Building2 className="w-4 h-4" />
-          {ACCOMODATION_TYPE_LABELS[formData.accomodationType]} *
+          {ACCOMMODATION_TYPE_LABELS[formData.accommodationType]} *
         </Label>
         <Input
           id="hotelName"
-          placeholder={`Ej: ${formData.accomodationType === 'hotel' ? 'Grand Paradise Resort' : formData.accomodationType === 'cabin' ? 'Cabañas del Bosque' : 'Casa Vista al Mar'}`}
+          placeholder={`Ej: ${formData.accommodationType === 'hotel' ? 'Grand Paradise Resort' : formData.accommodationType === 'cabin' ? 'Cabañas del Bosque' : 'Casa Vista al Mar'}`}
           value={formData.hotelName}
           onChange={(e) => onChange('hotelName', e.target.value)}
           className={errors.hotelName ? 'border-destructive' : ''}
@@ -124,10 +123,10 @@ export function HotelDetailsStep({ formData, onChange, errors }: HotelDetailsSte
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium text-primary px-2 py-1 rounded-full bg-primary/10">
-              {ACCOMODATION_TYPE_LABELS[formData.accomodationType]}
+              {ACCOMMODATION_TYPE_LABELS[formData.accommodationType]}
             </span>
           </div>
-          <p className="font-medium">{formData.hotelName || `Nombre del ${ACCOMODATION_TYPE_LABELS[formData.accomodationType].toLowerCase()}`}</p>
+          <p className="font-medium">{formData.hotelName || `Nombre del ${ACCOMMODATION_TYPE_LABELS[formData.accommodationType].toLowerCase()}`}</p>
           <div className="flex gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <BedDouble className="w-3 h-3" />
