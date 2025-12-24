@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import logoViasol from "@/assets/logo-viasol.svg";
 import { FlightInfo } from "@/components/packages/FlightInfo";
 import { HotelInfo } from "@/components/packages/HotelInfo";
+import { TransferInfo } from "@/components/packages/TransferInfo";
 
 interface PackageData {
   id: string;
