@@ -127,7 +127,7 @@ export function HotelDetailsStep({ formData, onChange, errors }: HotelDetailsSte
               {ACCOMODATION_TYPE_LABELS[formData.accomodationType]}
             </span>
           </div>
-          <p className="font-medium">{formData.hotelName || 'Nombre del hotel'}</p>
+          <p className="font-medium">{formData.hotelName || `Nombre del ${ACCOMODATION_TYPE_LABELS[formData.accomodationType].toLowerCase()}`}</p>
           <div className="flex gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <BedDouble className="w-3 h-3" />
