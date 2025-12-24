@@ -68,6 +68,9 @@ export function MultiStepPackageForm({
       if (!formData.country.trim()) newErrors.country = 'El país es requerido';
       if (formData.price <= 0) newErrors.price = 'El precio debe ser mayor a 0';
       if (!formData.nights || formData.nights < 1) newErrors.nights = 'Mínimo 1 noche';
+      if (!formData.startDate.trim()) newErrors.country = 'La fecha de inicio es requerida';
+      if (!formData.endDate.trim()) newErrors.country = 'La fecha de finalización es requerida';
+      if (!formData.paymentLink.trim()) newErrors.country = 'El link de pago es requerido';
     }
 
     if (step === 1 && formData.includesHotel) {
