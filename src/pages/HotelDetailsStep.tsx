@@ -11,6 +11,24 @@ interface HotelDetailsStepProps {
   errors: Partial<Record<keyof PackageFormData, string>>;
 }
 
+const getAccommodationLabel = (type: AccommodationType, context: 'article' | 'preview') => {
+  const labels = {
+    hotel: {
+      article: 'del Hotel',
+      preview: 'hotel'
+    },
+    cabin: {
+      article: 'de la Cabaña',
+      preview: 'cabaña'
+    },
+    house: {
+      article: 'de la Casa',
+      preview: 'casa'
+    }
+  };
+  return labels[type][context];
+};
+
 export function HotelDetailsStep({ formData, onChange, errors }: HotelDetailsStepProps) {
   if (!formData.includesHotel) {
     return (
@@ -30,7 +48,7 @@ export function HotelDetailsStep({ formData, onChange, errors }: HotelDetailsSte
         <h3 className="text-lg font-semibold">Información del Hotel</h3>
       </div>
 
-      {/* NUEVO: Tipo de Alojamiento */}
+      {/* Tipo de Alojamiento */}
        <div className="space-y-2">
         <Label htmlFor="accommodationType" className="flex items-center gap-2">
           <Home className="w-4 h-4" />
@@ -54,11 +72,11 @@ export function HotelDetailsStep({ formData, onChange, errors }: HotelDetailsSte
         {errors.accommodationType && <p className="text-sm text-destructive">{errors.accommodationType}</p>}
       </div>
       
-      {/* Hotel Name */}
-      <div className="space-y-2">
+      {/* Nombre del alojamiento */}
+    <div className="space-y-2">
         <Label htmlFor="hotelName" className="flex items-center gap-2">
           <Building2 className="w-4 h-4" />
-          {ACCOMMODATION_TYPE_LABELS[formData.accommodationType]} *
+          Nombre {getAccommodationLabel(formData.accommodationType, 'article')} *
         </Label>
         <Input
           id="hotelName"
@@ -69,6 +87,7 @@ export function HotelDetailsStep({ formData, onChange, errors }: HotelDetailsSte
         />
         {errors.hotelName && <p className="text-sm text-destructive">{errors.hotelName}</p>}
       </div>
+
 
       {/* Room Type */}
       <div className="space-y-2">
@@ -127,7 +146,9 @@ export function HotelDetailsStep({ formData, onChange, errors }: HotelDetailsSte
               {ACCOMMODATION_TYPE_LABELS[formData.accommodationType]}
             </span>
           </div>
-          <p className="font-medium">{formData.hotelName || `Nombre del ${ACCOMMODATION_TYPE_LABELS[formData.accommodationType].toLowerCase()}`}</p>
+          <p className="font-medium">
+            {formData.hotelName || `Nombre ${getAccommodationLabel(formData.accommodationType, 'preview')}`}
+          </p>
           <div className="flex gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <BedDouble className="w-3 h-3" />
