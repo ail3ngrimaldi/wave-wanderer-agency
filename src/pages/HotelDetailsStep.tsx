@@ -3,6 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PackageFormData, RoomType, MealPlan, AccommodationType, ROOM_TYPE_LABELS, MEAL_PLAN_LABELS, ACCOMMODATION_TYPE_LABELS } from '@/types/package';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Building2, BedDouble, UtensilsCrossed, AlertCircle, Home } from 'lucide-react';
 
 interface HotelDetailsStepProps {
   formData: PackageFormData;
