@@ -2,6 +2,14 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
 import { generatePackageSlug } from "@/utils/slugGenerator";
+import { uploadMediaFile } from "@/utils/uploadMedia";
+
+  let uploadedUrls: string[] = [];
+  if (pkg.mediaFiles && pkg.mediaFiles.length > 0) {
+    const uploadPromises = pkg.mediaFiles.map(file => uploadMediaFile(file, slug));
+    const results = await Promise.all(uploadPromises);
+    uploadedUrls = results.filter((url): url is string => url !== null);
+  }
 
 // We update the interface to include the new fields
 export interface Package {
@@ -146,6 +154,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
         accommodation_type: pkg.accommodationType || null,
         room_type: pkg.roomType || null,
         meal_plan: pkg.mealPlan || null,
+        media_urls: uploadedUrls,
 
         // Flight
         airline: pkg.airline || null,
