@@ -4,13 +4,6 @@ import { useAuth } from "./AuthContext";
 import { generatePackageSlug } from "@/utils/slugGenerator";
 import { uploadMediaFile } from "@/utils/uploadMedia";
 
-  let uploadedUrls: string[] = [];
-  if (pkg.mediaFiles && pkg.mediaFiles.length > 0) {
-    const uploadPromises = pkg.mediaFiles.map(file => uploadMediaFile(file, slug));
-    const results = await Promise.all(uploadPromises);
-    uploadedUrls = results.filter((url): url is string => url !== null);
-  }
-
 // We update the interface to include the new fields
 export interface Package {
   id: string;
@@ -40,6 +33,8 @@ export interface Package {
   accommodationType: string | null;
   roomType: string | null;
   mealPlan: string | null;
+  mediaUrls: string[]; // AGREGAR ESTA LÍNEA
+  mediaFiles?: File[]; // AGREGAR ESTA LÍNEA (opcional porque no se guarda en DB)
 
   // Flight Details
   airline: string | null;
@@ -99,6 +94,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
           accommodationType: pkg.accommodation_type,
           roomType: pkg.room_type,
           mealPlan: pkg.meal_plan,
+          mediaUrls: pkg.media_urls || [], // AGREGAR ESTA LÍNEA
           airline: pkg.airline,
           departureAirport: pkg.departure_airport,
           arrivalAirport: pkg.arrival_airport,
@@ -133,7 +129,16 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
 
   const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt">): Promise<{ id: string; slug: string } | null> => {
     const slug = generatePackageSlug(pkg.title);
-    // We map Frontend (camelCase) to DB (snake_case)
+    
+    // 1. SUBIR ARCHIVOS DE MEDIOS PRIMERO (MOVER ESTE CÓDIGO AQUÍ DENTRO)
+    let uploadedUrls: string[] = [];
+    if (pkg.mediaFiles && pkg.mediaFiles.length > 0) {
+      const uploadPromises = pkg.mediaFiles.map(file => uploadMediaFile(file, slug));
+      const results = await Promise.all(uploadPromises);
+      uploadedUrls = results.filter((url): url is string => url !== null);
+    }
+    
+    // 2. GUARDAR PAQUETE CON LAS URLs
     const { data, error } = await supabase
       .from("packages")
       .insert({
@@ -154,7 +159,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
         accommodation_type: pkg.accommodationType || null,
         room_type: pkg.roomType || null,
         meal_plan: pkg.mealPlan || null,
-        media_urls: uploadedUrls,
+        media_urls: uploadedUrls, // URLs subidas al storage
 
         // Flight
         airline: pkg.airline || null,
@@ -225,6 +230,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
       accommodationType: data.accommodation_type,
       roomType: data.room_type,
       mealPlan: data.meal_plan,
+      mediaUrls: data.media_urls || [], // AGREGAR ESTA LÍNEA
       airline: data.airline,
       departureAirport: data.departure_airport,
       arrivalAirport: data.arrival_airport,
