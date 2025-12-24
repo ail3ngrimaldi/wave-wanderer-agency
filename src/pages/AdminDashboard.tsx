@@ -215,7 +215,7 @@ interface PackageCardProps {
 
 const PackageCard = ({ pkg, onCopy, onShare, onDelete, isCopied }: PackageCardProps) => {
     // ... Copy your existing PackageCard code here ...
-    const link = `${window.location.origin}/paquete/${pkg.id}`;
+    const link = `${window.location.origin}/paquete/${pkg.slug || pkg.id}`;
 
   return (
     <motion.div
