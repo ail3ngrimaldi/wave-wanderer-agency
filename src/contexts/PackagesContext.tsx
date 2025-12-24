@@ -29,7 +29,7 @@ export interface Package {
 
   // Hotel Details
   hotelName: string | null;
-  accomodationType: string | null;
+  accommodationType: string | null;
   roomType: string | null;
   mealPlan: string | null;
 
@@ -88,7 +88,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
           includesHotel: pkg.includes_hotel,
           includesTransfer: pkg.includes_transfer,
           hotelName: pkg.hotel_name,
-          accomodationType: pkg.accomodation_type,
+          accommodationType: pkg.accommodation_type,
           roomType: pkg.room_type,
           mealPlan: pkg.meal_plan,
           airline: pkg.airline,
@@ -143,7 +143,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
         
         // Hotel
         hotel_name: pkg.hotelName || null,
-        accomodation_type: pkg.accomodationType || null,
+        accommodation_type: pkg.accommodationType || null,
         room_type: pkg.roomType || null,
         meal_plan: pkg.mealPlan || null,
 
@@ -213,7 +213,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
       includesHotel: data.includes_hotel,
       includesTransfer: data.includes_transfer,
       hotelName: data.hotel_name,
-      accomodationType: data.accomodation_type,
+      accommodationType: data.accommodation_type,
       roomType: data.room_type,
       mealPlan: data.meal_plan,
       airline: data.airline,
