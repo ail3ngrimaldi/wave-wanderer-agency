@@ -50,6 +50,8 @@ export interface PackageFormData {
   accommodationType: AccommodationType;
   roomType: RoomType;
   mealPlan: MealPlan;
+  mediaUrls: string[]; // URLs de archivos ya subidos
+  mediaFiles: File[];
 
   // Flight Details
   airline: string;
@@ -83,6 +85,8 @@ export const DEFAULT_FORM_DATA: PackageFormData = {
   accommodationType: 'hotel',
   roomType: 'standard',
   mealPlan: 'breakfast',
+  mediaUrls: [],
+  mediaFiles: [],
   airline: '',
   departureAirport: '',
   arrivalAirport: '',
