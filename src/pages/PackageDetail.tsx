@@ -59,7 +59,7 @@ const PackageDetail = () => {
       const { data, error } = await supabase
         .from("packages_public")
         .select("*")
-        .eq("id", id)
+        .eq("slug", id)
         .maybeSingle();
 
       if (error || !data) {
