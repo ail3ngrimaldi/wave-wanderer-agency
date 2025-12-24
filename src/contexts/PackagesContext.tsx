@@ -29,17 +29,18 @@ export interface Package {
 
   // Hotel Details
   hotelName: string | null;
-  roomType: string | null; // New
-  mealPlan: string | null; // New
+  accomodationType: string | null;
+  roomType: string | null;
+  mealPlan: string | null;
 
   // Flight Details
-  airline: string | null; // New
-  departureAirport: string | null; // New
-  arrivalAirport: string | null; // New
-  outboundDepartureTime: string | null; // New
-  outboundArrivalTime: string | null; // New
-  returnDepartureTime: string | null; // New
-  returnArrivalTime: string | null; // New
+  airline: string | null;
+  departureAirport: string | null;
+  arrivalAirport: string | null;
+  outboundDepartureTime: string | null;
+  outboundArrivalTime: string | null;
+  returnDepartureTime: string | null;
+  returnArrivalTime: string | null;
 
   createdAt: Date;
   expiresAt: Date;
@@ -87,8 +88,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
           includesHotel: pkg.includes_hotel,
           includesTransfer: pkg.includes_transfer,
           hotelName: pkg.hotel_name,
-          
-          // Map new fields from DB (snake_case) to Frontend (camelCase)
+          accomodationType: pkg.accomodation_type,
           roomType: pkg.room_type,
           mealPlan: pkg.meal_plan,
           airline: pkg.airline,
@@ -143,6 +143,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
         
         // Hotel
         hotel_name: pkg.hotelName || null,
+        accomodation_type: pkg.accomodationType || null,
         room_type: pkg.roomType || null,
         meal_plan: pkg.mealPlan || null,
 
@@ -212,8 +213,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
       includesHotel: data.includes_hotel,
       includesTransfer: data.includes_transfer,
       hotelName: data.hotel_name,
-      
-      // New fields
+      accomodationType: data.accomodation_type,
       roomType: data.room_type,
       mealPlan: data.meal_plan,
       airline: data.airline,
@@ -223,7 +223,6 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
       outboundArrivalTime: data.outbound_arrival_time,
       returnDepartureTime: data.return_departure_time,
       returnArrivalTime: data.return_arrival_time,
-
       price: Number(data.price),
       currency: data.currency,
       priceNote: data.price_note,
