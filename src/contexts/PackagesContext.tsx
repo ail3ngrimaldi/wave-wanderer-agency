@@ -1,10 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
+import { generateSlug } from "@/utils/slugs";
 
 // We update the interface to include the new fields
 export interface Package {
   id: string;
+  slug: string;
   title: string;
   description: string | null;
   imageUrl: string | null;
@@ -72,6 +74,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
     } else {
       setPackages(
         data.map((pkg) => ({
+          slug: pkg.slug,
           id: pkg.id,
           title: pkg.title,
           description: pkg.description,
@@ -120,11 +123,14 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
-  const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt">): Promise<string | null> => {
+  const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt" | "slug">): Promise<string | null> => {
     // We map Frontend (camelCase) to DB (snake_case)
+    const slug = generateSlug(pkg.title);
+    
     const { data, error } = await supabase
       .from("packages")
       .insert({
+        slug: slug,
         title: pkg.title,
         description: pkg.description || null,
         image_url: pkg.imageUrl || null,
@@ -168,7 +174,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
     }
 
     await fetchPackages();
-    return data.id;
+    return data.slug;
   };
 
   const deletePackage = async (id: string) => {
@@ -194,6 +200,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
     }
 
     return {
+      slug: data.slug,
       id: data.id,
       title: data.title,
       description: data.description,
