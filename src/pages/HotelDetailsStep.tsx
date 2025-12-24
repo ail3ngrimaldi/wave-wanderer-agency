@@ -1,7 +1,7 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { PackageFormData, RoomType, MealPlan, ROOM_TYPE_LABELS, MEAL_PLAN_LABELS } from '@/types/package';
+import { PackageFormData, RoomType, MealPlan, AccomodationType, ROOM_TYPE_LABELS, MEAL_PLAN_LABELS, ACCOMODATION_TYPE_LABELS } from '@/types/package'; // AGREGAR AccomodationType y ACCOMODATION_TYPE_LABELS
 import { Building2, BedDouble, UtensilsCrossed, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
@@ -122,6 +122,11 @@ export function HotelDetailsStep({ formData, onChange, errors }: HotelDetailsSte
       <div className="mt-8 p-4 rounded-lg bg-muted/50 border">
         <h4 className="text-sm font-medium mb-3 text-muted-foreground">Vista previa</h4>
         <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-primary px-2 py-1 rounded-full bg-primary/10">
+              {ACCOMODATION_TYPE_LABELS[formData.accomodationType]}
+            </span>
+          </div>
           <p className="font-medium">{formData.hotelName || 'Nombre del hotel'}</p>
           <div className="flex gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
