@@ -260,11 +260,9 @@ const PackageDetail = () => {
                   <span className="text-white text-2xl font-bold">+</span>
                 )}
 
-                {/* 3. TRANSFER - Standard Icon */}
+                {/* 3. TRANSFER */}
                 {pkg.includes_transfer && (
-                  <div className="w-14 h-14 rounded-full bg-turquoise flex items-center justify-center shadow-lg">
-                    <Bus className="w-7 h-7 text-white" />
-                  </div>
+                  <TransferInfo />
                 )}
               </div>
             </motion.div>
