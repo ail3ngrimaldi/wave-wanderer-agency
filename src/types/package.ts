@@ -1,8 +1,8 @@
 export type RoomType = 'standard' | 'deluxe' | 'suite' | 'family';
-export type AccomodationType = 'hotel' | 'cabin' | 'house';
+export type AccommodationType = 'hotel' | 'cabin' | 'house';
 export type MealPlan = 'none' | 'breakfast' | 'half_board' | 'full_board' | 'all_inclusive';
 
-export const ACCOMODATION_TYPE_LABELS: Record<AccomodationType, string> = {
+export const ACCOMMODATION_TYPE_LABELS: Record<AccommodationType, string> = {
   hotel: 'Hotel',
   cabin: 'Cabaña',
   house: 'Casa',
@@ -47,7 +47,7 @@ export interface PackageFormData {
 
   // Hotel Details
   hotelName: string;
-  accomodationType: AccomodationType;
+  accommodationType: AccommodationType;
   roomType: RoomType;
   mealPlan: MealPlan;
 
@@ -80,6 +80,7 @@ export const DEFAULT_FORM_DATA: PackageFormData = {
   includesHotel: true,
   includesTransfer: true,
   hotelName: '',
+  accommodationType: 'hotel',
   roomType: 'standard',
   mealPlan: 'breakfast',
   airline: '',
