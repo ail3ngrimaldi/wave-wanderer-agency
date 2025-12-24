@@ -130,7 +130,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
     const { data, error } = await supabase
       .from("packages")
       .insert({
-        slug: slug,
+        slug: pkg.slug,
         title: pkg.title,
         description: pkg.description || null,
         image_url: pkg.imageUrl || null,
