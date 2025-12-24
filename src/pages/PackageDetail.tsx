@@ -7,6 +7,7 @@ import logoViasol from "@/assets/logo-viasol.svg";
 import { FlightInfo } from "@/components/packages/FlightInfo";
 import { HotelInfo } from "@/components/packages/HotelInfo";
 import { TransferInfo } from "@/components/packages/TransferInfo";
+import { MediaGallery } from "@/components/packages/MediaGallery";
 
 interface PackageData {
   id: string;
@@ -26,6 +27,7 @@ interface PackageData {
   hotel_name: string | null;
   room_type: string | null;
   meal_plan: string | null;
+  media_urls: string[] | null;
 
   // Flight Details (Snake Case from DB)
   airline: string | null;
@@ -321,6 +323,10 @@ const PackageDetail = () => {
             )}
           </motion.div>
         </main>
+
+        {pkg.media_urls && pkg.media_urls.length > 0 && (
+          <MediaGallery mediaUrls={pkg.media_urls} />
+        )}
         
         {/* Footer with disclaimer */}
         {pkg.disclaimer && (
