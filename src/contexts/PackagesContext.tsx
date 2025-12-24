@@ -1,10 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
+import { generatePackageSlug } from "@/utils/slugGenerator";
 
 // We update the interface to include the new fields
 export interface Package {
   id: string;
+  slug: string | null;
   title: string;
   description: string | null;
   imageUrl: string | null;
@@ -73,6 +75,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
       setPackages(
         data.map((pkg) => ({
           id: pkg.id,
+          slug: pkg.slug,
           title: pkg.title,
           description: pkg.description,
           imageUrl: pkg.image_url,
@@ -121,10 +124,12 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt">): Promise<string | null> => {
+    const slug = generatePackageSlug(pkg.title);
     // We map Frontend (camelCase) to DB (snake_case)
     const { data, error } = await supabase
       .from("packages")
       .insert({
+        slug: slug,
         title: pkg.title,
         description: pkg.description || null,
         image_url: pkg.imageUrl || null,
@@ -195,6 +200,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
 
     return {
       id: data.id,
+      slug: data.slug,
       title: data.title,
       description: data.description,
       imageUrl: data.image_url,
