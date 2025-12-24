@@ -9,7 +9,7 @@ export const MediaGallery = ({ mediaUrls }: MediaGalleryProps) => {
   if (!mediaUrls || mediaUrls.length === 0) return null;
 
   const isVideo = (url: string) => {
-    return url.match(/\.(mp4|webm|ogg)$/i) !== null;
+    return url.match(/\.(mp4|webm|ogg|mov|avi|mkv|m4v)$/i) !== null;
   };
 
   return (
