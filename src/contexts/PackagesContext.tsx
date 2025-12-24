@@ -1,11 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
-import { generateSlug } from "@/utils/slugs";
 
+// We update the interface to include the new fields
 export interface Package {
   id: string;
-  slug: string; // The friendly URL identifier
   title: string;
   description: string | null;
   imageUrl: string | null;
@@ -26,9 +25,20 @@ export interface Package {
   includesHotel: boolean;
   includesTransfer: boolean;
 
-  // Basic Hotel/Flight Details (No new fields yet)
+  // Hotel Details
   hotelName: string | null;
-  
+  roomType: string | null; // New
+  mealPlan: string | null; // New
+
+  // Flight Details
+  airline: string | null; // New
+  departureAirport: string | null; // New
+  arrivalAirport: string | null; // New
+  outboundDepartureTime: string | null; // New
+  outboundArrivalTime: string | null; // New
+  returnDepartureTime: string | null; // New
+  returnArrivalTime: string | null; // New
+
   createdAt: Date;
   expiresAt: Date;
 }
@@ -36,8 +46,7 @@ export interface Package {
 interface PackagesContextType {
   packages: Package[];
   loading: boolean;
-  // NOTE: We Omit "slug" here because the System generates it, not the User form.
-  addPackage: (pkg: Omit<Package, "id" | "slug" | "createdAt" | "expiresAt">) => Promise<string | null>;
+  addPackage: (pkg: Omit<Package, "id" | "createdAt" | "expiresAt">) => Promise<string | null>;
   deletePackage: (id: string) => Promise<void>;
   getPackage: (id: string) => Promise<Package | null>;
   refreshPackages: () => Promise<void>;
@@ -52,22 +61,18 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchPackages = async () => {
     setLoading(true);
-    console.log("📦 Fetching packages...");
-    
     const { data, error } = await supabase
       .from("packages")
       .select("*")
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("❌ Error fetching packages:", error);
+      console.error("Error fetching packages:", error);
       setPackages([]);
     } else {
-      console.log(`✅ Loaded ${data.length} packages.`);
       setPackages(
         data.map((pkg) => ({
           id: pkg.id,
-          slug: pkg.slug, // Read slug from DB
           title: pkg.title,
           description: pkg.description,
           imageUrl: pkg.image_url,
@@ -80,6 +85,17 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
           includesTransfer: pkg.includes_transfer,
           hotelName: pkg.hotel_name,
           
+          // Map new fields from DB (snake_case) to Frontend (camelCase)
+          roomType: pkg.room_type,
+          mealPlan: pkg.meal_plan,
+          airline: pkg.airline,
+          departureAirport: pkg.departure_airport,
+          arrivalAirport: pkg.arrival_airport,
+          outboundDepartureTime: pkg.outbound_departure_time,
+          outboundArrivalTime: pkg.outbound_arrival_time,
+          returnDepartureTime: pkg.return_departure_time,
+          returnArrivalTime: pkg.return_arrival_time,
+
           price: Number(pkg.price),
           currency: pkg.currency,
           priceNote: pkg.price_note,
@@ -104,17 +120,11 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
-  const addPackage = async (pkg: Omit<Package, "id" | "slug" | "createdAt" | "expiresAt">): Promise<string | null> => {
-    console.log("📝 Creating package:", pkg.title);
-    
-    // 1. Generate the slug locally based on the title
-    const generatedSlug = generateSlug(pkg.title);
-    console.log("🔗 Generated Slug:", generatedSlug);
-
+  const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt">): Promise<string | null> => {
+    // We map Frontend (camelCase) to DB (snake_case)
     const { data, error } = await supabase
       .from("packages")
       .insert({
-        slug: generatedSlug, // Save the slug
         title: pkg.title,
         description: pkg.description || null,
         image_url: pkg.imageUrl || null,
@@ -125,8 +135,21 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
         includes_flight: pkg.includesFlight,
         includes_hotel: pkg.includesHotel,
         includes_transfer: pkg.includesTransfer,
-        hotel_name: pkg.hotelName || null,
         
+        // Hotel
+        hotel_name: pkg.hotelName || null,
+        room_type: pkg.roomType || null,
+        meal_plan: pkg.mealPlan || null,
+
+        // Flight
+        airline: pkg.airline || null,
+        departure_airport: pkg.departureAirport || null,
+        arrival_airport: pkg.arrivalAirport || null,
+        outbound_departure_time: pkg.outboundDepartureTime || null,
+        outbound_arrival_time: pkg.outboundArrivalTime || null,
+        return_departure_time: pkg.returnDepartureTime || null,
+        return_arrival_time: pkg.returnArrivalTime || null,
+
         price: pkg.price,
         currency: pkg.currency,
         price_note: pkg.priceNote || null,
@@ -140,40 +163,38 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
       .single();
 
     if (error) {
-      console.error("❌ Error saving to Supabase:", error);
+      console.error("Error creating package:", error);
       return null;
     }
 
-    console.log("✅ Package saved! ID:", data.id, "Slug:", data.slug);
     await fetchPackages();
-    
-    // Return the SLUG so the UI can use it for the link
-    return data.slug;
+    return data.id;
   };
 
   const deletePackage = async (id: string) => {
     const { error } = await supabase.from("packages").delete().eq("id", id);
+
     if (error) {
       console.error("Error deleting package:", error);
       return;
     }
+
     setPackages((prev) => prev.filter((pkg) => pkg.id !== id));
   };
 
   const getPackage = async (id: string): Promise<Package | null> => {
-    // Note: The Admin Panel calls this by ID to edit.
-    // The Public Page will need to query by SLUG differently.
     const { data, error } = await supabase
       .from("packages")
       .select("*")
       .eq("id", id)
       .maybeSingle();
 
-    if (error || !data) return null;
+    if (error || !data) {
+      return null;
+    }
 
     return {
       id: data.id,
-      slug: data.slug,
       title: data.title,
       description: data.description,
       imageUrl: data.image_url,
@@ -185,6 +206,18 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
       includesHotel: data.includes_hotel,
       includesTransfer: data.includes_transfer,
       hotelName: data.hotel_name,
+      
+      // New fields
+      roomType: data.room_type,
+      mealPlan: data.meal_plan,
+      airline: data.airline,
+      departureAirport: data.departure_airport,
+      arrivalAirport: data.arrival_airport,
+      outboundDepartureTime: data.outbound_departure_time,
+      outboundArrivalTime: data.outbound_arrival_time,
+      returnDepartureTime: data.return_departure_time,
+      returnArrivalTime: data.return_arrival_time,
+
       price: Number(data.price),
       currency: data.currency,
       priceNote: data.price_note,

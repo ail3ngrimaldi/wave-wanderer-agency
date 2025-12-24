@@ -43,21 +43,24 @@ interface PackageData {
 }
 
 const PackageDetail = () => {
-  const { id: slug } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>();
   const [pkg, setPkg] = useState<PackageData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-  const fetchPackage = async () => {
-    if (!slug) return;
+    const fetchPackage = async () => {
+      if (!id) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
 
-    // 2. Search by 'slug' column
-    const { data, error } = await supabase
-      .from("packages_public") // Ensure your view includes the 'slug' column!
-      .select("*")
-      .eq("slug", slug)
-      .maybeSingle();
+      const { data, error } = await supabase
+        .from("packages_public")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
 
       if (error || !data) {
         setNotFound(true);
