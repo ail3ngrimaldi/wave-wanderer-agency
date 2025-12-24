@@ -30,15 +30,39 @@ export function HotelDetailsStep({ formData, onChange, errors }: HotelDetailsSte
         <h3 className="text-lg font-semibold">Información del Hotel</h3>
       </div>
 
+      {/* NUEVO: Tipo de Alojamiento */}
+       <div className="space-y-2">
+        <Label htmlFor="accomodationType" className="flex items-center gap-2">
+          <Home className="w-4 h-4" />
+          Tipo de Alojamiento *
+        </Label>
+        <Select
+          value={formData.accomodationType}
+          onValueChange={(value: AccomodationType) => onChange('accomodationType', value)}
+        >
+          <SelectTrigger className={errors.accomodationType ? 'border-destructive' : ''}>
+            <SelectValue placeholder="Seleccionar tipo de alojamiento" />
+          </SelectTrigger>
+          <SelectContent>
+            {(Object.keys(ACCOMODATION_TYPE_LABELS) as AccomodationType[]).map((type) => (
+              <SelectItem key={type} value={type}>
+                {ACCOMODATION_TYPE_LABELS[type]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.accomodationType && <p className="text-sm text-destructive">{errors.accomodationType}</p>}
+      </div>
+      
       {/* Hotel Name */}
       <div className="space-y-2">
         <Label htmlFor="hotelName" className="flex items-center gap-2">
           <Building2 className="w-4 h-4" />
-          Nombre del Hotel *
+          {ACCOMODATION_TYPE_LABELS[formData.accomodationType]} *
         </Label>
         <Input
           id="hotelName"
-          placeholder="Ej: Grand Paradise Resort"
+          placeholder={`Ej: ${formData.accomodationType === 'hotel' ? 'Grand Paradise Resort' : formData.accomodationType === 'cabin' ? 'Cabañas del Bosque' : 'Casa Vista al Mar'}`}
           value={formData.hotelName}
           onChange={(e) => onChange('hotelName', e.target.value)}
           className={errors.hotelName ? 'border-destructive' : ''}
