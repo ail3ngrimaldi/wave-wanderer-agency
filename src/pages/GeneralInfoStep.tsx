@@ -93,7 +93,8 @@ export function GeneralInfoStep({ formData, onChange, errors }: GeneralInfoStepP
               <button
                 className={cn(
                   "w-full flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                  !formData.startDate && "text-muted-foreground"
+                  !formData.startDate && "text-muted-foreground",
+                  errors.startDate && "border-destructive"
                 )}
               >
                 {formData.startDate ? format(formData.startDate, "dd/MM/yyyy", { locale: es }) : "Seleccionar"}
@@ -110,6 +111,7 @@ export function GeneralInfoStep({ formData, onChange, errors }: GeneralInfoStepP
               />
             </PopoverContent>
           </Popover>
+          {errors.startDate && <p className="text-sm text-destructive">{errors.startDate}</p>}
         </div>
         
         <div className="space-y-2">
@@ -122,7 +124,8 @@ export function GeneralInfoStep({ formData, onChange, errors }: GeneralInfoStepP
               <button
                 className={cn(
                   "w-full flex items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                  !formData.endDate && "text-muted-foreground"
+                  !formData.endDate && "text-muted-foreground",
+                  errors.endDate && "border-destructive"
                 )}
               >
                 {formData.endDate ? format(formData.endDate, "dd/MM/yyyy", { locale: es }) : "Seleccionar"}
@@ -140,6 +143,7 @@ export function GeneralInfoStep({ formData, onChange, errors }: GeneralInfoStepP
               />
             </PopoverContent>
           </Popover>
+              {errors.endDate && <p className="text-sm text-destructive">{errors.endDate}</p>}
         </div>
         
         <div className="space-y-2">
@@ -266,8 +270,10 @@ export function GeneralInfoStep({ formData, onChange, errors }: GeneralInfoStepP
             placeholder="https://..."
             value={formData.paymentLink}
             onChange={(e) => onChange('paymentLink', e.target.value)}
+            className={errors.paymentLink ? 'border-destructive' : ''}
           />
         </div>
+        {errors.paymentLink && <p className="text-sm text-destructive">{errors.paymentLink}</p>}
       </div>
     </div>
   );
