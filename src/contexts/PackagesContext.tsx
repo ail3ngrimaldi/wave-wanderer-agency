@@ -48,7 +48,7 @@ export interface Package {
 interface PackagesContextType {
   packages: Package[];
   loading: boolean;
-  addPackage: (pkg: Omit<Package, "id" | "createdAt" | "expiresAt">) => Promise<string | null>;
+  addPackage: (pkg: Omit<Package, "id" | "createdAt" | "expiresAt">) => Promise<{ id: string; slug: string } | null>;
   deletePackage: (id: string) => Promise<void>;
   getPackage: (id: string) => Promise<Package | null>;
   refreshPackages: () => Promise<void>;
@@ -123,7 +123,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
-  const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt">): Promise<string | null> => {
+  const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt">): Promise<{ id: string; slug: string } | null> => {
     const slug = generatePackageSlug(pkg.title);
     // We map Frontend (camelCase) to DB (snake_case)
     const { data, error } = await supabase
@@ -173,7 +173,7 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
     }
 
     await fetchPackages();
-    return data.id;
+    return { id: data.id, slug: data.slug };
   };
 
   const deletePackage = async (id: string) => {
