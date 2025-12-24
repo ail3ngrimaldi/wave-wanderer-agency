@@ -1,12 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
-import { generateSlug } from "@/utils/slugs";
 
 // We update the interface to include the new fields
 export interface Package {
   id: string;
-  slug: string;
   title: string;
   description: string | null;
   imageUrl: string | null;
@@ -29,9 +27,8 @@ export interface Package {
 
   // Hotel Details
   hotelName: string | null;
-  accommodationType: string | null;
-  roomType: string | null;
-  mealPlan: string | null;
+  roomType: string | null; // New
+  mealPlan: string | null; // New
 
   // Flight Details
   airline: string | null; // New
@@ -49,7 +46,7 @@ export interface Package {
 interface PackagesContextType {
   packages: Package[];
   loading: boolean;
-  addPackage: (pkg: Omit<Package, "id" | "createdAt" | "expiresAt" | "slug">) => Promise<string | null>;
+  addPackage: (pkg: Omit<Package, "id" | "createdAt" | "expiresAt">) => Promise<string | null>;
   deletePackage: (id: string) => Promise<void>;
   getPackage: (id: string) => Promise<Package | null>;
   refreshPackages: () => Promise<void>;
@@ -76,7 +73,6 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
       setPackages(
         data.map((pkg) => ({
           id: pkg.id,
-          slug: pkg.slug,
           title: pkg.title,
           description: pkg.description,
           imageUrl: pkg.image_url,
@@ -88,7 +84,6 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
           includesHotel: pkg.includes_hotel,
           includesTransfer: pkg.includes_transfer,
           hotelName: pkg.hotel_name,
-          accommodationType: pkg.accommodation_type,
           
           // Map new fields from DB (snake_case) to Frontend (camelCase)
           roomType: pkg.room_type,
@@ -125,17 +120,11 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
-const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt" | "slug">): Promise<string | null> => {
-    // 1. Generate the slug from the title
-    const slug = generateSlug(pkg.title); 
-
+  const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt">): Promise<string | null> => {
+    // We map Frontend (camelCase) to DB (snake_case)
     const { data, error } = await supabase
       .from("packages")
       .insert({
-        // 2. Add the slug to the insert object
-        slug: slug, 
-        
-        // ... mapped fields ...
         title: pkg.title,
         description: pkg.description || null,
         image_url: pkg.imageUrl || null,
@@ -147,11 +136,12 @@ const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt" | 
         includes_hotel: pkg.includesHotel,
         includes_transfer: pkg.includesTransfer,
         
+        // Hotel
         hotel_name: pkg.hotelName || null,
-        accommodation_type: pkg.accommodationType || null,
         room_type: pkg.roomType || null,
         meal_plan: pkg.mealPlan || null,
 
+        // Flight
         airline: pkg.airline || null,
         departure_airport: pkg.departureAirport || null,
         arrival_airport: pkg.arrivalAirport || null,
@@ -178,9 +168,7 @@ const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt" | 
     }
 
     await fetchPackages();
-    
-    // 3. Return the SLUG (not the ID) so AdminDashboard can make the link
-    return data.slug; 
+    return data.id;
   };
 
   const deletePackage = async (id: string) => {
@@ -207,7 +195,6 @@ const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt" | 
 
     return {
       id: data.id,
-      slug: data.slug,
       title: data.title,
       description: data.description,
       imageUrl: data.image_url,
@@ -219,7 +206,6 @@ const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt" | 
       includesHotel: data.includes_hotel,
       includesTransfer: data.includes_transfer,
       hotelName: data.hotel_name,
-      accommodationType: data.accommodation_type,
       
       // New fields
       roomType: data.room_type,

@@ -30,28 +30,6 @@ export function HotelDetailsStep({ formData, onChange, errors }: HotelDetailsSte
         <h3 className="text-lg font-semibold">Información del Hotel</h3>
       </div>
 
-      <div className="space-y-2">
-            <Label htmlFor="accommodationType" className="flex items-center gap-2">
-            <Home className="w-4 h-4" />
-            Tipo de Alojamiento *
-            </Label>
-            <Select
-            value={formData.accomodationType} // Pay attention to spelling: 1 'm' or 2 'm's based on your Types file
-            onValueChange={(value: any) => onChange('accomodationType', value)}
-            >
-            <SelectTrigger>
-                <SelectValue placeholder="Seleccionar" />
-            </SelectTrigger>
-            <SelectContent>
-                {(Object.keys(ACCOMMODATION_TYPE_LABELS) as any[]).map((type) => (
-                <SelectItem key={type} value={type}>
-                    {ACCOMMODATION_TYPE_LABELS[type]}
-                </SelectItem>
-                ))}
-            </SelectContent>
-            </Select>
-        </div>
-
       {/* Hotel Name */}
       <div className="space-y-2">
         <Label htmlFor="hotelName" className="flex items-center gap-2">
