@@ -37,7 +37,7 @@ const AdminDashboard = () => {
       return;
     }
 
-    const link = `${window.location.origin}/paquete/${id}`;
+    const link = `${window.location.origin}/paquete/${pkg.slug}`;
     setGeneratedLink(link);
 
     toast({
