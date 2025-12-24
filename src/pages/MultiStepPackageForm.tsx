@@ -63,6 +63,7 @@ export function MultiStepPackageForm({
 
     if (step === 0) {
       if (!formData.title.trim()) newErrors.title = 'El título es requerido';
+      if (!formData.departureCity.trim()) newErrors.departureCity = 'La ciudad de origen es requerida';
       if (!formData.destination.trim()) newErrors.destination = 'El destino es requerido';
       if (!formData.country.trim()) newErrors.country = 'El país es requerido';
       if (formData.price <= 0) newErrors.price = 'El precio debe ser mayor a 0';
@@ -70,7 +71,7 @@ export function MultiStepPackageForm({
     }
 
     if (step === 1 && formData.includesHotel) {
-      if (!formData.hotelName.trim()) newErrors.hotelName = 'El nombre del hotel es requerido';
+      if (!formData.hotelName.trim()) newErrors.hotelName = 'El nombre del alojamiento es requerido';
     }
 
     if (step === 2 && formData.includesFlight) {
