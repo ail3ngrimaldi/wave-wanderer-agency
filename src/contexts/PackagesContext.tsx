@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./AuthContext";
 import { generateSlug } from "@/utils/slugs";
 
-// We update the interface to include the new fields
 export interface Package {
   id: string;
   slug: string;
@@ -29,17 +28,18 @@ export interface Package {
 
   // Hotel Details
   hotelName: string | null;
-  roomType: string | null; // New
-  mealPlan: string | null; // New
+  roomType: string | null;
+  mealPlan: string | null;
+  accommodationType: string | null; // Added missing field
 
   // Flight Details
-  airline: string | null; // New
-  departureAirport: string | null; // New
-  arrivalAirport: string | null; // New
-  outboundDepartureTime: string | null; // New
-  outboundArrivalTime: string | null; // New
-  returnDepartureTime: string | null; // New
-  returnArrivalTime: string | null; // New
+  airline: string | null;
+  departureAirport: string | null;
+  arrivalAirport: string | null;
+  outboundDepartureTime: string | null;
+  outboundArrivalTime: string | null;
+  returnDepartureTime: string | null;
+  returnArrivalTime: string | null;
 
   createdAt: Date;
   expiresAt: Date;
@@ -48,7 +48,8 @@ export interface Package {
 interface PackagesContextType {
   packages: Package[];
   loading: boolean;
-  addPackage: (pkg: Omit<Package, "id" | "createdAt" | "expiresAt">) => Promise<string | null>;
+  // FIX 1: Added "slug" to the Omit list so the form doesn't need to provide it
+  addPackage: (pkg: Omit<Package, "id" | "createdAt" | "expiresAt" | "slug">) => Promise<string | null>;
   deletePackage: (id: string) => Promise<void>;
   getPackage: (id: string) => Promise<Package | null>;
   refreshPackages: () => Promise<void>;
@@ -74,8 +75,8 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
     } else {
       setPackages(
         data.map((pkg) => ({
-          slug: pkg.slug,
           id: pkg.id,
+          slug: pkg.slug,
           title: pkg.title,
           description: pkg.description,
           imageUrl: pkg.image_url,
@@ -88,7 +89,9 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
           includesTransfer: pkg.includes_transfer,
           hotelName: pkg.hotel_name,
           
-          // Map new fields from DB (snake_case) to Frontend (camelCase)
+          // FIX 2: Corrected typo (accommodation_type is likely lowercase in DB)
+          accommodationType: pkg.accommodation_type,
+          
           roomType: pkg.room_type,
           mealPlan: pkg.meal_plan,
           airline: pkg.airline,
@@ -123,14 +126,17 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
+  // FIX 3: Added "slug" to Omit here too
   const addPackage = async (pkg: Omit<Package, "id" | "createdAt" | "expiresAt" | "slug">): Promise<string | null> => {
-    // We map Frontend (camelCase) to DB (snake_case)
-    const slug = generateSlug(pkg.title);
-    
+    // 1. Generate the slug locally
+    const slug = generateSlug(pkg.title); 
+
     const { data, error } = await supabase
       .from("packages")
       .insert({
-        slug: pkg.slug,
+        // FIX 4: Use the 'slug' variable we just created, NOT 'pkg.slug'
+        slug: slug, 
+        
         title: pkg.title,
         description: pkg.description || null,
         image_url: pkg.imageUrl || null,
@@ -142,12 +148,12 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
         includes_hotel: pkg.includesHotel,
         includes_transfer: pkg.includesTransfer,
         
-        // Hotel
         hotel_name: pkg.hotelName || null,
+        // FIX 5: Handle accommodationType mapping correctly
+        accommodation_type: pkg.accommodationType || 'hotel',
         room_type: pkg.roomType || null,
         meal_plan: pkg.mealPlan || null,
 
-        // Flight
         airline: pkg.airline || null,
         departure_airport: pkg.departureAirport || null,
         arrival_airport: pkg.arrivalAirport || null,
@@ -174,7 +180,9 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
     }
 
     await fetchPackages();
-    return data.slug;
+    
+    // FIX 6: Return the slug so the UI can redirect to the friendly URL
+    return data.slug; 
   };
 
   const deletePackage = async (id: string) => {
@@ -189,6 +197,9 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const getPackage = async (id: string): Promise<Package | null> => {
+    // Note: If you want to fetch by ID, this is fine.
+    // If you want to fetch by SLUG on the public page, you need a separate function or logic change.
+    // For now, this is valid for the Admin panel logic.
     const { data, error } = await supabase
       .from("packages")
       .select("*")
@@ -200,8 +211,8 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
     }
 
     return {
-      slug: data.slug,
       id: data.id,
+      slug: data.slug,
       title: data.title,
       description: data.description,
       imageUrl: data.image_url,
@@ -214,7 +225,9 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
       includesTransfer: data.includes_transfer,
       hotelName: data.hotel_name,
       
-      // New fields
+      // FIX 7: Correct mapping
+      accommodationType: data.accommodation_type,
+      
       roomType: data.room_type,
       mealPlan: data.meal_plan,
       airline: data.airline,
