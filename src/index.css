@@ -261,3 +261,7 @@
     opacity: 0.8;
   }
 }
+
+#lovable {
+  display: none !important;
+}
