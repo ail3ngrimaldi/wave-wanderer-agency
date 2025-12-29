@@ -19,7 +19,6 @@ CREATE TABLE public.packages (
   payment_link TEXT,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   expires_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT (now() + interval '7 days'),
-  created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL
 );
 
 -- Enable RLS
