@@ -48,7 +48,7 @@ export default function Register() {
         navigate("/admin");
       } else {
         alert("Usuario creado. Por favor confirma tu correo electrónico antes de ingresar.");
-        navigate("/login"); // O donde prefieras
+        navigate("/admin");
       }
     }
     setLoading(false);
