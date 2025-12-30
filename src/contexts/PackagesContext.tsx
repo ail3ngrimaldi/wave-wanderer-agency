@@ -177,7 +177,6 @@ export const PackagesProvider = ({ children }: { children: ReactNode }) => {
         payment_link: pkg.paymentLink || null,
         start_date: pkg.startDate ? pkg.startDate.toISOString().split('T')[0] : null,
         end_date: pkg.endDate ? pkg.endDate.toISOString().split('T')[0] : null,
-        created_by: user?.id || null,
       })
       .select()
       .single();
