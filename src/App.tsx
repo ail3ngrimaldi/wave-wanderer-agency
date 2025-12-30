@@ -11,6 +11,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import PackageDetail from "./pages/PackageDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
+import Register from "./pages/Register";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/crear-cuenta" element={<Register />} />
               <Route path="/admin" element={<AdminLogin />} />
               <Route
                 path="/admin/dashboard"
