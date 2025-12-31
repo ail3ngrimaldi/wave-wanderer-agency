@@ -19,8 +19,8 @@ export default function Register() {
     setLoading(true);
 
     // Validación básica
-    if (formData.password.length < 6) {
-      setErrorMsg("La contraseña debe tener al menos 6 caracteres.");
+    if (formData.password.length < 8) {
+      setErrorMsg("La contraseña debe tener al menos 8 caracteres.");
       setLoading(false);
       return;
     }
@@ -98,7 +98,7 @@ export default function Register() {
                   type={showPassword ? "text" : "password"}
                   autoComplete="new-password"
                   required
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Mínimo 8 caracteres"
                   className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm pr-10"
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
