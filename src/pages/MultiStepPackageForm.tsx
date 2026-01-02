@@ -70,7 +70,6 @@ export function MultiStepPackageForm({
       if (!formData.nights || formData.nights < 1) newErrors.nights = 'Mínimo 1 noche';
       if (!formData.startDate) newErrors.startDate = 'La fecha de inicio es requerida';
       if (!formData.endDate) newErrors.endDate = 'La fecha de finalización es requerida';
-      if (!formData.paymentLink.trim()) newErrors.paymentLink = 'El link de pago es requerido';
     }
 
     if (step === 1 && formData.includesHotel) {
