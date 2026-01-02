@@ -17,7 +17,13 @@ const AdminLogin = () => {
 
   // Redirect if already authenticated as admin
   useEffect(() => {
-    if (!authLoading && isAuthenticated && isAdmin) {
+     if (!authLoading && isAuthenticated && !isAdmin && !isLoading) {
+    // Usuario autenticado pero no es admin
+    setError("Este usuario no tiene permisos de administrador");
+    // Hacer logout automático
+    supabase.auth.signOut();
+    }
+    else if (!authLoading && isAuthenticated && isAdmin) {
       navigate("/admin/dashboard");
     }
   }, [isAuthenticated, isAdmin, authLoading, navigate]);
@@ -38,7 +44,6 @@ const AdminLogin = () => {
       toast({ title: "Email enviado", description: "Revisa tu correo para restablecer tu contraseña" });
     }
   };
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
