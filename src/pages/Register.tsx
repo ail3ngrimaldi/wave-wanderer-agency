@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // Link ya no es estrictamente necesario si manejamos todo con estados
 import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -10,8 +10,6 @@ export default function Register() {
   const [verifyingSession, setVerifyingSession] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  
-  // Estado para saber qué tipo de flujo es
   const [flowType, setFlowType] = useState<"invite" | "recovery" | null>(null);
 
   const [formData, setFormData] = useState({
@@ -20,75 +18,92 @@ export default function Register() {
   });
 
   useEffect(() => {
-    // Función para procesar parámetros de URL (Hash o Query)
-    const handleUrlParams = async () => {
-      // Obtenemos parámetros tanto del hash (#) como del query (?)
+    let intervalId: NodeJS.Timeout;
+    let mounted = true;
+
+    const checkSessionAndUrl = async () => {
+      // 1. Analizar URL
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const queryParams = new URLSearchParams(window.location.search);
       
-      // 1. Detección de errores explícitos de Supabase (ej: Link expirado o inválido)
       const errorDescription = hashParams.get('error_description') || queryParams.get('error_description');
-      const error = hashParams.get('error') || queryParams.get('error');
+      const type = hashParams.get('type') || queryParams.get('type');
+      const hasToken = hashParams.get('access_token') || queryParams.get('code');
 
-      if (error || errorDescription) {
-        setErrorMsg(errorDescription?.replace(/\+/g, ' ') || "Error en el enlace de verificación.");
+      // Si hay error explícito en la URL
+      if (errorDescription) {
+        setErrorMsg(errorDescription.replace(/\+/g, ' '));
         setVerifyingSession(false);
         return;
       }
 
-      // 2. Detección de tipo de flujo (Invite vs Recovery)
-      // A veces viene en el hash 'type', a veces lo inferimos
-      const type = hashParams.get('type') || queryParams.get('type');
+      // Detectar tipo
       if (type === 'invite') setFlowType('invite');
       else if (type === 'recovery') setFlowType('recovery');
 
-      // 3. Verificar si ya existe una sesión activa
+      // 2. Intentar obtener sesión inmediatamente
       const { data: { session } } = await supabase.auth.getSession();
 
-      if (session) {
-        // ÉXITO: Tenemos sesión
+      if (session && mounted) {
+        // ¡Éxito inmediato!
         setFormData(prev => ({ ...prev, email: session.user.email || '' }));
-        // Si no detectamos el tipo por URL, asumimos recovery por defecto si ya está logueado en esta pág
-        if (!type && !flowType) setFlowType('recovery');
+        if (!type && !flowType) setFlowType('recovery'); 
         setVerifyingSession(false);
-      } else {
-        // 4. NO hay sesión aún. ¿Hay indicadores de que estamos procesando un login?
-        const hasAccessToken = hashParams.get('access_token');
-        const hasCode = queryParams.get('code'); // PKCE flow usa 'code'
+        return;
+      }
 
-        if (hasAccessToken || hasCode) {
-          // Si hay tokens en la URL, NO mostramos error aún. Esperamos a onAuthStateChange.
-          // Supabase está intercambiando el token por la sesión en background.
-          console.log("Token detectado, esperando sesión...");
-        } else {
-          // Si no hay sesión Y no hay tokens en la URL -> Alguien entró directo
-          setErrorMsg("No se detectó un enlace de validación activo.");
-          setVerifyingSession(false);
+      // 3. Si NO hay sesión pero SÍ hay token, iniciamos estrategia de reintentos (Polling)
+      if (hasToken && !session) {
+        console.log("Token detectado. Iniciando espera activa de sesión...");
+        
+        let attempts = 0;
+        const maxAttempts = 10; // Intentar por 5 segundos (10 * 500ms)
+
+        intervalId = setInterval(async () => {
+          attempts++;
+          console.log(`Intento de verificación ${attempts}/${maxAttempts}`);
+          
+          const { data: { session: newSession } } = await supabase.auth.getSession();
+          
+          if (newSession && mounted) {
+            console.log("Sesión establecida exitosamente.");
+            setFormData(prev => ({ ...prev, email: newSession.user.email || '' }));
+            if (!type && !flowType) setFlowType('recovery');
+            setVerifyingSession(false);
+            clearInterval(intervalId);
+          } else if (attempts >= maxAttempts && mounted) {
+            console.log("Tiempo de espera agotado.");
+            setErrorMsg("No se pudo establecer la sesión. El enlace podría haber expirado.");
+            setVerifyingSession(false);
+            clearInterval(intervalId);
+          }
+        }, 500); // Chequear cada medio segundo
+      } else {
+        // No hay token ni sesión
+        if (mounted) {
+           setErrorMsg("Enlace no válido o falta de credenciales.");
+           setVerifyingSession(false);
         }
       }
     };
 
-    handleUrlParams();
+    checkSessionAndUrl();
 
-    // Escuchar cambios de estado (Login exitoso tras procesar el token)
+    // También mantenemos el listener por si acaso el evento llega limpio
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth Event:", event);
-      
-      if (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY' || event === 'TOKEN_REFRESHED') {
-        if (session) {
-          setFormData(prev => ({ ...prev, email: session.user.email || '' }));
-          
-          // Si es un evento de recovery explícito, actualizamos el flow
-          if (event === 'PASSWORD_RECOVERY') setFlowType('recovery');
-          // Si es invite, a veces entra como SIGNED_IN normal, pero ya seteamos invite arriba si venía en URL
-          
-          setVerifyingSession(false);
-          setErrorMsg(""); // Limpiar errores si logueó exitosamente
-        }
+      if (session && mounted) {
+        // Si el listener gana la carrera al intervalo, limpiamos y establecemos
+        if (intervalId) clearInterval(intervalId);
+        setFormData(prev => ({ ...prev, email: session.user.email || '' }));
+        setVerifyingSession(false);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      if (intervalId) clearInterval(intervalId);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
@@ -103,7 +118,6 @@ export default function Register() {
     }
 
     try {
-      // Siempre updateUser porque el usuario ya existe
       const { error } = await supabase.auth.updateUser({ 
         password: formData.password 
       });
@@ -111,8 +125,8 @@ export default function Register() {
       if (error) throw error;
 
       toast({
-        title: "Cuenta actualizada",
-        description: "Bienvenido al panel de administración.",
+        title: "Contraseña actualizada",
+        description: "Ya puedes ingresar con tu nueva clave.",
       });
 
       navigate("/admin");
@@ -124,18 +138,16 @@ export default function Register() {
     }
   };
 
-  // Renderizado de carga
   if (verifyingSession) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 flex-col gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        <p className="text-gray-500 font-medium">Verificando credenciales...</p>
+        <p className="text-gray-500 font-medium">Validando enlace de seguridad...</p>
       </div>
     );
   }
 
-  // Renderizado de Error Fatal (Link inválido/expirado)
-  if (!formData.email && errorMsg) {
+  if (errorMsg && !formData.email) {
       return (
         <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
             <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg text-center border border-red-100">
@@ -144,11 +156,14 @@ export default function Register() {
                         <AlertCircle className="w-8 h-8 text-red-600" />
                     </div>
                 </div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Enlace no válido</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">No se pudo verificar</h2>
                 <p className="text-gray-600 mb-6">{errorMsg}</p>
-                <Link to="/admin" className="text-blue-600 font-medium hover:underline">
+                <button 
+                  onClick={() => navigate("/admin")}
+                  className="text-blue-600 font-medium hover:underline"
+                >
                     Volver al inicio de sesión
-                </Link>
+                </button>
             </div>
         </div>
       );
@@ -159,12 +174,12 @@ export default function Register() {
       <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-            {flowType === 'invite' ? "Te damos la bienvenida" : "Nueva Contraseña"}
+            {flowType === 'invite' ? "Bienvenido" : "Nueva Contraseña"}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             {flowType === 'invite' 
-              ? `Hola ${formData.email}. Define tu contraseña para activar la cuenta.`
-              : "Ingresa una nueva contraseña para recuperar el acceso."
+              ? `Configura el acceso para ${formData.email}`
+              : "Ingresa tu nueva contraseña para recuperar el acceso."
             }
           </p>
         </div>
