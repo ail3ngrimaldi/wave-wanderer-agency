@@ -146,6 +146,15 @@ const AdminLogin = () => {
                 )}
               </span>
             </button>
+            <p className="text-center mt-4 text-sm">
+            <button 
+              type="button"
+              onClick={handleForgotPassword}
+              className="text-primary hover:underline"
+            >
+              ¿Olvidaste tu contraseña?
+            </button>
+          </p>
           </form>
 
           {/* Back link */}
