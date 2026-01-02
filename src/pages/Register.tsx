@@ -158,7 +158,7 @@ export default function Register() {
           </button>
           
           <div className="text-center text-sm">
-            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link to="/admin" className="font-medium text-blue-600 hover:text-blue-500">
               ¿Ya tienes cuenta? Inicia sesión
             </Link>
           </div>
