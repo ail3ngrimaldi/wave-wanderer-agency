@@ -14,15 +14,27 @@ export default function Register() {
   });
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Detectar si el usuario llegó desde invitación o reset de contraseña
+ // Detectar el tipo de flujo
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setIsInvitedUser(true);
-        setFormData(prev => ({ ...prev, email: session.user.email || '' }));
-      }
-    });
+    // Parsear el hash de la URL para detectar tokens
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const type = hashParams.get('type');
+    
+    if (accessToken && (type === 'invite' || type === 'recovery' || type === 'magiclink')) {
+      // El usuario viene de un link de invitación o recuperación
+      setIsInvitedUser(true);
+      setFlowType(type); // Nuevo estado para saber el tipo
+      
+      // Supabase debería haber procesado el token automáticamente
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          setFormData(prev => ({ ...prev, email: session.user.email || '' }));
+        }
+      });
+    }
   }, []);
+
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
