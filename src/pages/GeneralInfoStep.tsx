@@ -264,7 +264,7 @@ export function GeneralInfoStep({ formData, onChange, errors }: GeneralInfoStepP
         </div>
         
         <div className="space-y-2">
-          <Label htmlFor="paymentLink">Link de pago</Label>
+          <Label htmlFor="paymentLink">Link de pago (opcional)</Label>
           <Input
             id="paymentLink"
             placeholder="https://..."
