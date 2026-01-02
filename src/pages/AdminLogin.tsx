@@ -20,6 +20,24 @@ const AdminLogin = () => {
     }
   }, [isAuthenticated, isAdmin, authLoading, navigate]);
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError("Ingresa tu correo electrónico primero");
+      return;
+    }
+    
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/crear-cuenta`, // Reutilizamos la misma ruta
+    });
+    
+    if (error) {
+      setError(error.message);
+    } else {
+      toast({ title: "Email enviado", description: "Revisa tu correo para restablecer tu contraseña" });
+    }
+  };
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
