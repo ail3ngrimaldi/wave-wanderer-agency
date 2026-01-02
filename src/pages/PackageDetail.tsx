@@ -363,7 +363,7 @@ const PackageDetail = () => {
               </motion.a>
             ) : (
               <motion.button
-                onClick={() => copyAlias("viasol.agencia")} // Alias hardcodeado
+                onClick={() => copyAlias("USD.AGENCIA.VIASOL")} // Alias 
                 className="inline-flex items-center gap-3 px-8 py-4 bg-emerald-500 text-white font-bold text-lg rounded-full shadow-lg"
               >
                 <Copy className="w-5 h-5" />
