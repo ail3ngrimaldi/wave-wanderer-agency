@@ -19,6 +19,9 @@ interface PackageData {
   country: string;
   departure_city: string;
   nights: number;
+
+  start_date: string | null;
+  end_date: string | null;
   
   includes_flight: boolean;
   includes_hotel: boolean;
@@ -119,6 +122,16 @@ const PackageDetail = () => {
     }
   };
 
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('es-AR', { 
+      day: 'numeric', 
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -200,6 +213,23 @@ const PackageDetail = () => {
                 {pkg.destination.toUpperCase()}
               </span>
             </motion.div>
+
+            {/* Fechas del viaje */}
+            {(pkg.start_date || pkg.end_date) && (
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.55 }}
+                className="text-white/90 text-sm tracking-wider mb-2"
+              >
+                {pkg.start_date && pkg.end_date 
+                  ? `${formatDate(pkg.start_date)} - ${formatDate(pkg.end_date)}`
+                  : pkg.start_date 
+                    ? `Desde ${formatDate(pkg.start_date)}`
+                    : `Hasta ${formatDate(pkg.end_date)}`
+                }
+              </motion.p>
+            )}
             
             {/* Departure City */}
             <motion.p 
