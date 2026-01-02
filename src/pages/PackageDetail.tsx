@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Plane, Building2, Bus, CreditCard, Loader2 } from "lucide-react";
+import { ArrowLeft, Plane, Building2, Bus, CreditCard, Loader2, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import logoViasol from "@/assets/logo-viasol.svg";
 import { FlightInfo } from "@/components/packages/FlightInfo";
