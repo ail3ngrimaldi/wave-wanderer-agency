@@ -320,7 +320,6 @@ const PackageDetail = () => {
                 <CreditCard className="w-5 h-5" />
                 Reservar ahora
               </motion.a>
-            )}
             ) : (
               <motion.button
                 onClick={() => copyAlias("viasol.agencia")} // Alias hardcodeado
