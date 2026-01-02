@@ -109,6 +109,16 @@ const PackageDetail = () => {
     );
   }
 
+  const copyAlias = async (alias: string) => {
+  try {
+      await navigator.clipboard.writeText(alias);
+      alert(`Alias copiado: ${alias}`);
+    } catch (err) {
+      console.error('Error al copiar:', err);
+    }
+  };
+
+
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Background Image */}
