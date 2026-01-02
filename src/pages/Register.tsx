@@ -1,79 +1,94 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function Register() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [verifyingSession, setVerifyingSession] = useState(true); // Nuevo estado de carga inicial
+  const [verifyingSession, setVerifyingSession] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
   
-  // Leemos el hash INMEDIATAMENTE al inicializar el estado
-  const getInitialFlowType = () => {
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const type = hashParams.get('type');
-    if (type === 'invite') return 'invite';
-    if (type === 'recovery') return 'recovery';
-    return null; // Si es null, no debería estar aquí
-  };
+  // Estado para saber qué tipo de flujo es
+  const [flowType, setFlowType] = useState<"invite" | "recovery" | null>(null);
 
-  const [flowType, setFlowType] = useState<"invite" | "recovery" | null>(getInitialFlowType());
-  
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        // 1. Verificar sesión actual
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        // 2. Si no hay sesión, esperamos al evento de cambio de estado (Supabase procesando el hash)
-        if (!session) {
-          // Escuchar si Supabase logra loguear al usuario con el token de la URL
-          const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') {
-              if (session) {
-                setFormData(prev => ({ ...prev, email: session.user.email || '' }));
-                
-                // Si recuperamos la sesión pero no sabíamos el tipo (ej: magic link puro), asumimos recovery
-                if (!flowType) setFlowType('recovery');
-                setVerifyingSession(false);
-              }
-            }
-          });
-          
-          // Si pasan 2 segundos y no hay sesión, es que el link es inválido o expiró
-          setTimeout(() => {
-             // Chequeamos una ultima vez
-             supabase.auth.getSession().then(({ data: { session: finalSession } }) => {
-                if (!finalSession) {
-                    setErrorMsg("El enlace es inválido o ha expirado.");
-                    setVerifyingSession(false);
-                }
-             });
-          }, 2000);
+    // Función para procesar parámetros de URL (Hash o Query)
+    const handleUrlParams = async () => {
+      // Obtenemos parámetros tanto del hash (#) como del query (?)
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const queryParams = new URLSearchParams(window.location.search);
+      
+      // 1. Detección de errores explícitos de Supabase (ej: Link expirado o inválido)
+      const errorDescription = hashParams.get('error_description') || queryParams.get('error_description');
+      const error = hashParams.get('error') || queryParams.get('error');
 
-          return () => subscription.unsubscribe();
+      if (error || errorDescription) {
+        setErrorMsg(errorDescription?.replace(/\+/g, ' ') || "Error en el enlace de verificación.");
+        setVerifyingSession(false);
+        return;
+      }
+
+      // 2. Detección de tipo de flujo (Invite vs Recovery)
+      // A veces viene en el hash 'type', a veces lo inferimos
+      const type = hashParams.get('type') || queryParams.get('type');
+      if (type === 'invite') setFlowType('invite');
+      else if (type === 'recovery') setFlowType('recovery');
+
+      // 3. Verificar si ya existe una sesión activa
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session) {
+        // ÉXITO: Tenemos sesión
+        setFormData(prev => ({ ...prev, email: session.user.email || '' }));
+        // Si no detectamos el tipo por URL, asumimos recovery por defecto si ya está logueado en esta pág
+        if (!type && !flowType) setFlowType('recovery');
+        setVerifyingSession(false);
+      } else {
+        // 4. NO hay sesión aún. ¿Hay indicadores de que estamos procesando un login?
+        const hasAccessToken = hashParams.get('access_token');
+        const hasCode = queryParams.get('code'); // PKCE flow usa 'code'
+
+        if (hasAccessToken || hasCode) {
+          // Si hay tokens en la URL, NO mostramos error aún. Esperamos a onAuthStateChange.
+          // Supabase está intercambiando el token por la sesión en background.
+          console.log("Token detectado, esperando sesión...");
         } else {
-          // Ya hay sesión activa
-          setFormData(prev => ({ ...prev, email: session.user.email || '' }));
-          if (!flowType) setFlowType('recovery'); // Default a recovery si ya estaba logueado
+          // Si no hay sesión Y no hay tokens en la URL -> Alguien entró directo
+          setErrorMsg("No se detectó un enlace de validación activo.");
           setVerifyingSession(false);
         }
-
-      } catch (error) {
-        console.error("Error verificando sesión:", error);
-        setVerifyingSession(false);
       }
     };
 
-    checkSession();
+    handleUrlParams();
+
+    // Escuchar cambios de estado (Login exitoso tras procesar el token)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth Event:", event);
+      
+      if (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY' || event === 'TOKEN_REFRESHED') {
+        if (session) {
+          setFormData(prev => ({ ...prev, email: session.user.email || '' }));
+          
+          // Si es un evento de recovery explícito, actualizamos el flow
+          if (event === 'PASSWORD_RECOVERY') setFlowType('recovery');
+          // Si es invite, a veces entra como SIGNED_IN normal, pero ya seteamos invite arriba si venía en URL
+          
+          setVerifyingSession(false);
+          setErrorMsg(""); // Limpiar errores si logueó exitosamente
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
@@ -88,8 +103,7 @@ export default function Register() {
     }
 
     try {
-      // AQUÍ ESTÁ LA CLAVE: SIEMPRE ES updateUser
-      // Porque el usuario ya existe (sea invitado o recuperando)
+      // Siempre updateUser porque el usuario ya existe
       const { error } = await supabase.auth.updateUser({ 
         password: formData.password 
       });
@@ -97,8 +111,8 @@ export default function Register() {
       if (error) throw error;
 
       toast({
-        title: "Contraseña actualizada",
-        description: "Tu contraseña se ha establecido correctamente.",
+        title: "Cuenta actualizada",
+        description: "Bienvenido al panel de administración.",
       });
 
       navigate("/admin");
@@ -110,25 +124,28 @@ export default function Register() {
     }
   };
 
-  // Renderizado de carga inicial
+  // Renderizado de carga
   if (verifyingSession) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600 mb-4" />
-            <p className="text-gray-500">Verificando enlace...</p>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 flex-col gap-4">
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <p className="text-gray-500 font-medium">Verificando credenciales...</p>
       </div>
     );
   }
 
-  // Si terminó de cargar y NO detectó un flujo válido (alguien entró directo a la URL)
-  if (!formData.email && !flowType) {
+  // Renderizado de Error Fatal (Link inválido/expirado)
+  if (!formData.email && errorMsg) {
       return (
         <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
-            <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg text-center">
+            <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg text-center border border-red-100">
+                <div className="flex justify-center mb-4">
+                    <div className="p-3 bg-red-100 rounded-full">
+                        <AlertCircle className="w-8 h-8 text-red-600" />
+                    </div>
+                </div>
                 <h2 className="text-xl font-bold text-gray-900 mb-2">Enlace no válido</h2>
-                <p className="text-gray-600 mb-6">No hemos detectado una solicitud válida de recuperación o invitación.</p>
+                <p className="text-gray-600 mb-6">{errorMsg}</p>
                 <Link to="/admin" className="text-blue-600 font-medium hover:underline">
                     Volver al inicio de sesión
                 </Link>
@@ -142,11 +159,11 @@ export default function Register() {
       <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-            {flowType === 'invite' ? "Bienvenido" : "Nueva Contraseña"}
+            {flowType === 'invite' ? "Te damos la bienvenida" : "Nueva Contraseña"}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             {flowType === 'invite' 
-              ? "Crea tu contraseña para activar tu cuenta."
+              ? `Hola ${formData.email}. Define tu contraseña para activar la cuenta.`
               : "Ingresa una nueva contraseña para recuperar el acceso."
             }
           </p>
