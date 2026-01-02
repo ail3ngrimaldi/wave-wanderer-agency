@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Lock, Mail, Loader2, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from '@/hooks/use-toast';
 import logoViasol from "@/assets/logo-viasol.svg";
 
 const AdminLogin = () => {
