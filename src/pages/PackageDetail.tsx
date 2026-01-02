@@ -374,7 +374,7 @@ const PackageDetail = () => {
           </motion.div>
         </main>
         
-        <div className="w-full bg-slate-50 py-12">
+        <div className="w-full bg-turquoise-light py-12">
         {pkg.media_urls && pkg.media_urls.length > 0 && (
           <MediaGallery mediaUrls={pkg.media_urls} />
         )}
