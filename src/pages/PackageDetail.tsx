@@ -305,7 +305,8 @@ const PackageDetail = () => {
             </motion.p>
             
             {/* Payment Button */}
-            {pkg.payment_link && (
+            {pkg.payment_link ? (
+             {pkg.payment_link && (
               <motion.a 
                 href={pkg.payment_link}
                 target="_blank"
@@ -321,6 +322,16 @@ const PackageDetail = () => {
                 Reservar ahora
               </motion.a>
             )}
+            ) : (
+              <motion.button
+                onClick={() => copyAlias("viasol.agencia")} // Alias hardcodeado
+                className="inline-flex items-center gap-3 px-8 py-4 bg-emerald-500 text-white font-bold text-lg rounded-full shadow-lg"
+              >
+                <Copy className="w-5 h-5" />
+                Pagar por transferencia
+              </motion.button>
+            )}
+
           </motion.div>
         </main>
 
