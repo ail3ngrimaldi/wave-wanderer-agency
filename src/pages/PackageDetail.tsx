@@ -8,6 +8,7 @@ import { FlightInfo } from "@/components/packages/FlightInfo";
 import { HotelInfo } from "@/components/packages/HotelInfo";
 import { TransferInfo } from "@/components/packages/TransferInfo";
 import { MediaGallery } from "@/components/packages/MediaGallery";
+import { toast } from "sonner";
 
 interface PackageData {
   id: string;
