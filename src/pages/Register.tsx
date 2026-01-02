@@ -1,17 +1,26 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, Link } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 export default function Register() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [verifyingSession, setVerifyingSession] = useState(true); // Nuevo estado de carga inicial
   const [showPassword, setShowPassword] = useState(false);
   
-  // Estados para controlar el flujo
-  const [flowType, setFlowType] = useState<"signup" | "invite" | "recovery">("signup");
-  const [emailLocked, setEmailLocked] = useState(false);
+  // Leemos el hash INMEDIATAMENTE al inicializar el estado
+  const getInitialFlowType = () => {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const type = hashParams.get('type');
+    if (type === 'invite') return 'invite';
+    if (type === 'recovery') return 'recovery';
+    return null; // Si es null, no debería estar aquí
+  };
 
+  const [flowType, setFlowType] = useState<"invite" | "recovery" | null>(getInitialFlowType());
+  
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -19,136 +28,126 @@ export default function Register() {
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    // 1. Detectar parámetros en el hash (Supabase envía tokens aquí)
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const type = hashParams.get('type'); // 'invite', 'recovery', 'magiclink'
-    const accessToken = hashParams.get('access_token');
+    const checkSession = async () => {
+      try {
+        // 1. Verificar sesión actual
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        // 2. Si no hay sesión, esperamos al evento de cambio de estado (Supabase procesando el hash)
+        if (!session) {
+          // Escuchar si Supabase logra loguear al usuario con el token de la URL
+          const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY') {
+              if (session) {
+                setFormData(prev => ({ ...prev, email: session.user.email || '' }));
+                
+                // Si recuperamos la sesión pero no sabíamos el tipo (ej: magic link puro), asumimos recovery
+                if (!flowType) setFlowType('recovery');
+                setVerifyingSession(false);
+              }
+            }
+          });
+          
+          // Si pasan 2 segundos y no hay sesión, es que el link es inválido o expiró
+          setTimeout(() => {
+             // Chequeamos una ultima vez
+             supabase.auth.getSession().then(({ data: { session: finalSession } }) => {
+                if (!finalSession) {
+                    setErrorMsg("El enlace es inválido o ha expirado.");
+                    setVerifyingSession(false);
+                }
+             });
+          }, 2000);
 
-    // 2. Verificar si hay una sesión activa (Supabase procesa el hash automáticamente)
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        // Si hay sesión, es porque entró con link válido (Invite o Recovery)
-        setFormData(prev => ({ ...prev, email: session.user.email || '' }));
-        setEmailLocked(true);
-
-        // Si el hash dice qué tipo es, lo usamos. Si no, inferimos por la sesión.
-        if (type === 'invite') {
-          setFlowType('invite');
-        } else if (type === 'recovery') {
-          setFlowType('recovery');
+          return () => subscription.unsubscribe();
         } else {
-           // Si hay sesión pero no hay type explícito (a veces pasa al recargar), 
-           // asumimos que es gestión de cuenta existente.
-           // Opcional: Podrías chequear metadatos del usuario aquí.
-           setFlowType('recovery'); 
+          // Ya hay sesión activa
+          setFormData(prev => ({ ...prev, email: session.user.email || '' }));
+          if (!flowType) setFlowType('recovery'); // Default a recovery si ya estaba logueado
+          setVerifyingSession(false);
         }
-      }
-    });
 
-    // Escuchar cambios en el estado de autenticación (por si el token se procesa después del montaje)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setFlowType('recovery');
-        if (session?.user.email) {
-            setFormData(prev => ({ ...prev, email: session.user.email! }));
-            setEmailLocked(true);
-        }
+      } catch (error) {
+        console.error("Error verificando sesión:", error);
+        setVerifyingSession(false);
       }
-    });
+    };
 
-    return () => subscription.unsubscribe();
+    checkSession();
   }, []);
 
-
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
     setLoading(true);
 
-    // Validación básica
-    if (formData.password.length < 8) {
-      setErrorMsg("La contraseña debe tener al menos 8 caracteres.");
+    if (formData.password.length < 6) {
+      setErrorMsg("La contraseña debe tener al menos 6 caracteres.");
       setLoading(false);
       return;
     }
 
     try {
-      // CASO 1: Usuario Invitado o Recuperación de Contraseña
-      // En ambos casos el usuario YA EXISTE y YA TIENE SESIÓN (por el link).
-      // Solo necesitamos actualizar su contraseña.
-      if (flowType === 'invite' || flowType === 'recovery') {
-        const { error } = await supabase.auth.updateUser({ 
-          password: formData.password 
-        });
+      // AQUÍ ESTÁ LA CLAVE: SIEMPRE ES updateUser
+      // Porque el usuario ya existe (sea invitado o recuperando)
+      const { error } = await supabase.auth.updateUser({ 
+        password: formData.password 
+      });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        // Si es invite, tal vez quieras actualizar metadatos para decir que ya aceptó
-        // await supabase.from('profiles').update({ status: 'active' })... 
+      toast({
+        title: "Contraseña actualizada",
+        description: "Tu contraseña se ha establecido correctamente.",
+      });
 
-        navigate("/admin");
-      } 
-      
-      // CASO 2: Registro de Usuario Nuevo (Sign Up)
-      else {
-        const { data, error } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            // Asegúrate que esta URL esté en "Redirect URLs" en Supabase Dashboard
-            emailRedirectTo: `${window.location.origin}/crear-cuenta`
-          }
-        });
-
-        if (error) throw error;
-
-        if (data.session) {
-          navigate("/admin");
-        } else {
-          // Caso: Confirmación de email requerida
-          setErrorMsg("Revisa tu correo para confirmar la cuenta antes de entrar.");
-          setLoading(false); // No navegamos, dejamos que lea el mensaje
-          return;
-        }
-      }
+      navigate("/admin");
 
     } catch (err: any) {
-      // Manejo de error específico de "User already registered"
-      // A veces pasa si intentan registrarse normal en vez de usar el link
-      if (err.message.includes("already registered")) {
-        setErrorMsg("Este usuario ya existe. Por favor intenta iniciar sesión o recuperar contraseña.");
-      } else {
-        setErrorMsg(err.message || "Ocurrió un error inesperado.");
-      }
+      setErrorMsg(err.message || "Error al actualizar la contraseña.");
+    } finally {
       setLoading(false);
     }
   };
 
-  // Textos dinámicos según el flujo
-  const getTitle = () => {
-    if (flowType === 'invite') return "Acepta tu invitación";
-    if (flowType === 'recovery') return "Restablecer contraseña";
-    return "Crear cuenta de acceso";
-  };
+  // Renderizado de carga inicial
+  if (verifyingSession) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600 mb-4" />
+            <p className="text-gray-500">Verificando enlace...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const getButtonText = () => {
-    if (loading) return "Procesando...";
-    if (flowType === 'invite') return "Activar cuenta";
-    if (flowType === 'recovery') return "Cambiar contraseña";
-    return "Registrarse";
-  };
+  // Si terminó de cargar y NO detectó un flujo válido (alguien entró directo a la URL)
+  if (!formData.email && !flowType) {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+            <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg text-center">
+                <h2 className="text-xl font-bold text-gray-900 mb-2">Enlace no válido</h2>
+                <p className="text-gray-600 mb-6">No hemos detectado una solicitud válida de recuperación o invitación.</p>
+                <Link to="/admin" className="text-blue-600 font-medium hover:underline">
+                    Volver al inicio de sesión
+                </Link>
+            </div>
+        </div>
+      );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
         <div className="text-center">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900">
-            {getTitle()}
+            {flowType === 'invite' ? "Bienvenido" : "Nueva Contraseña"}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            {flowType === 'signup' 
-              ? "Ingresa tus datos para registrarte en el panel."
-              : "Ingresa una nueva contraseña segura."
+            {flowType === 'invite' 
+              ? "Crea tu contraseña para activar tu cuenta."
+              : "Ingresa una nueva contraseña para recuperar el acceso."
             }
           </p>
         </div>
@@ -159,22 +158,19 @@ export default function Register() {
           </div>
         )}
 
-        <form className="mt-8 space-y-6" onSubmit={handleRegister}>
+        <form className="mt-8 space-y-6" onSubmit={handleUpdatePassword}>
           <div className="space-y-4">
-            {/* Campo de email */}
+            {/* Campo de email (Solo lectura) */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-gray-700">
                 Correo electrónico
               </label>
               <div className="mt-1">
                 <input
-                  id="email"
                   type="email"
-                  required
-                  disabled={emailLocked} 
+                  disabled
                   value={formData.email}
-                  className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="block w-full rounded-md border border-gray-300 px-3 py-2 bg-gray-100 text-gray-500 cursor-not-allowed shadow-sm sm:text-sm"
                 />
               </div>
             </div>
@@ -182,14 +178,14 @@ export default function Register() {
             {/* Campo de contraseña */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                {flowType === 'signup' ? "Contraseña" : "Nueva Contraseña"}
+                Nueva Contraseña
               </label>
               <div className="relative mt-1">
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   required
-                  placeholder="Mínimo 8 caracteres"
+                  placeholder="Mínimo 6 caracteres"
                   className="block w-full rounded-md border border-gray-300 px-3 py-2 pr-10 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
@@ -209,14 +205,8 @@ export default function Register() {
             disabled={loading}
             className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 transition-colors"
           >
-            {getButtonText()}
+            {loading ? "Actualizando..." : "Guardar contraseña e Ingresar"}
           </button>
-          
-          <div className="text-center text-sm">
-            <Link to="/admin" className="font-medium text-blue-600 hover:text-blue-500">
-              {flowType === 'signup' ? "¿Ya tienes cuenta? Inicia sesión" : "Volver al login"}
-            </Link>
-          </div>
         </form>
       </div>
     </div>
