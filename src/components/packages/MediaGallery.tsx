@@ -33,7 +33,7 @@ export const MediaGallery = ({ mediaUrls }: MediaGalleryProps) => {
             transition={{ delay: 1.4 + index * 0.1 }}
             className="break-inside-avoid mb-4"
           >
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-turquoise/20">
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-golden">
               {isVideo(url) ? (
                 <video
                   src={url}
