@@ -306,7 +306,6 @@ const PackageDetail = () => {
             
             {/* Payment Button */}
             {pkg.payment_link ? (
-             {pkg.payment_link && (
               <motion.a 
                 href={pkg.payment_link}
                 target="_blank"
