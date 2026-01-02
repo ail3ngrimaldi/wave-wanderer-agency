@@ -25,6 +25,20 @@ export default function Register() {
       return;
     }
 
+    useEffect(() => {
+    // Si hay sesión activa (usuario llegó desde invitación), 
+    // solo necesita establecer contraseña
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          setIsInvitedUser(true);
+          setFormData(prev => ({ ...prev, email: session.user.email || '' }));
+        }
+      });
+    }, []);
+
+    // Para establecer contraseña de usuario invitado:
+    const { error } = await supabase.auth.updateUser({ password: formData.password });
+
     // Crear usuario en Supabase
     const { data, error } = await supabase.auth.updateUser({
       email: formData.email,
