@@ -29,7 +29,7 @@ const AdminLogin = () => {
     }
     
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/crear-cuenta`, // Reutilizamos la misma ruta
+      redirectTo: `${window.location.origin}/recuperar-contrasena`, // Reutilizamos la misma ruta
     });
     
     if (error) {
