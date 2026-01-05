@@ -155,7 +155,6 @@ export type Database = {
           arrival_airport: string | null
           country: string | null
           created_at: string | null
-          created_by: string | null
           currency: string | null
           departure_airport: string | null
           departure_city: string | null
@@ -191,7 +190,6 @@ export type Database = {
           arrival_airport?: string | null
           country?: string | null
           created_at?: string | null
-          created_by?: string | null
           currency?: string | null
           departure_airport?: string | null
           departure_city?: string | null
@@ -227,7 +225,6 @@ export type Database = {
           arrival_airport?: string | null
           country?: string | null
           created_at?: string | null
-          created_by?: string | null
           currency?: string | null
           departure_airport?: string | null
           departure_city?: string | null
