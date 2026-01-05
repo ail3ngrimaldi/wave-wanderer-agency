@@ -17,17 +17,44 @@ export default function ResetPassword() {
   const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
-    // Verificar si el usuario tiene una sesión válida (viene del link de recuperación)
+    // Escuchar cambios de autenticación (incluye cuando Supabase procesa el token del hash)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth event:", event);
+      
+      if (event === 'PASSWORD_RECOVERY') {
+        // El usuario viene del link de recuperación
+        setUserEmail(session?.user?.email || "");
+        setCheckingSession(false);
+      } else if (event === 'SIGNED_IN' && session) {
+        // Ya tiene sesión activa
+        setUserEmail(session.user.email || "");
+        setCheckingSession(false);
+      }
+    });
+
+    // También verificar si ya hay una sesión (por si el token ya fue procesado)
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setUserEmail(session.user.email || "");
         setCheckingSession(false);
-      } else {
-        // No hay sesión, mostrar error
-        setErrorMsg("El enlace de recuperación ha expirado o es inválido. Solicita uno nuevo.");
-        setCheckingSession(false);
       }
     });
+
+    // Timeout de seguridad: si después de 3 segundos no hay sesión, mostrar error
+    const timeout = setTimeout(() => {
+      setCheckingSession(prev => {
+        if (prev) {
+          setErrorMsg("El enlace de recuperación ha expirado o es inválido. Solicita uno nuevo.");
+          return false;
+        }
+        return prev;
+      });
+    }, 3000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   const handleResetPassword = async (e: React.FormEvent) => {
