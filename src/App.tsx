@@ -12,6 +12,7 @@ import PackageDetail from "./pages/PackageDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,8 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/crear-cuenta" element={<Register />} />
               <Route path="/admin" element={<AdminLogin />} />
+              <Route path="/recuperar-contrasena" element={<ResetPassword />} />
+              
               <Route
                 path="/admin/dashboard"
                 element={
