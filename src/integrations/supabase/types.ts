@@ -16,10 +16,14 @@ export type Database = {
     Tables: {
       packages: {
         Row: {
+          accommodation_type: string | null
+          airline: string | null
+          arrival_airport: string | null
           country: string
           created_at: string
           created_by: string | null
           currency: string
+          departure_airport: string | null
           departure_city: string
           description: string | null
           destination: string
@@ -32,18 +36,30 @@ export type Database = {
           includes_flight: boolean
           includes_hotel: boolean
           includes_transfer: boolean
+          meal_plan: string | null
+          media_urls: string[] | null
           nights: number
+          outbound_arrival_time: string | null
+          outbound_departure_time: string | null
           payment_link: string | null
           price: number
           price_note: string | null
+          return_arrival_time: string | null
+          return_departure_time: string | null
+          room_type: string | null
+          slug: string | null
           start_date: string | null
           title: string
         }
         Insert: {
+          accommodation_type?: string | null
+          airline?: string | null
+          arrival_airport?: string | null
           country: string
           created_at?: string
           created_by?: string | null
           currency?: string
+          departure_airport?: string | null
           departure_city: string
           description?: string | null
           destination: string
@@ -56,18 +72,30 @@ export type Database = {
           includes_flight?: boolean
           includes_hotel?: boolean
           includes_transfer?: boolean
+          meal_plan?: string | null
+          media_urls?: string[] | null
           nights?: number
+          outbound_arrival_time?: string | null
+          outbound_departure_time?: string | null
           payment_link?: string | null
           price: number
           price_note?: string | null
+          return_arrival_time?: string | null
+          return_departure_time?: string | null
+          room_type?: string | null
+          slug?: string | null
           start_date?: string | null
           title: string
         }
         Update: {
+          accommodation_type?: string | null
+          airline?: string | null
+          arrival_airport?: string | null
           country?: string
           created_at?: string
           created_by?: string | null
           currency?: string
+          departure_airport?: string | null
           departure_city?: string
           description?: string | null
           destination?: string
@@ -80,10 +108,18 @@ export type Database = {
           includes_flight?: boolean
           includes_hotel?: boolean
           includes_transfer?: boolean
+          meal_plan?: string | null
+          media_urls?: string[] | null
           nights?: number
+          outbound_arrival_time?: string | null
+          outbound_departure_time?: string | null
           payment_link?: string | null
           price?: number
           price_note?: string | null
+          return_arrival_time?: string | null
+          return_departure_time?: string | null
+          room_type?: string | null
+          slug?: string | null
           start_date?: string | null
           title?: string
         }
@@ -114,9 +150,14 @@ export type Database = {
     Views: {
       packages_public: {
         Row: {
+          accommodation_type: string | null
+          airline: string | null
+          arrival_airport: string | null
           country: string | null
           created_at: string | null
+          created_by: string | null
           currency: string | null
+          departure_airport: string | null
           departure_city: string | null
           description: string | null
           destination: string | null
@@ -129,17 +170,30 @@ export type Database = {
           includes_flight: boolean | null
           includes_hotel: boolean | null
           includes_transfer: boolean | null
+          meal_plan: string | null
+          media_urls: string[] | null
           nights: number | null
+          outbound_arrival_time: string | null
+          outbound_departure_time: string | null
           payment_link: string | null
           price: number | null
           price_note: string | null
+          return_arrival_time: string | null
+          return_departure_time: string | null
+          room_type: string | null
+          slug: string | null
           start_date: string | null
           title: string | null
         }
         Insert: {
+          accommodation_type?: string | null
+          airline?: string | null
+          arrival_airport?: string | null
           country?: string | null
           created_at?: string | null
+          created_by?: string | null
           currency?: string | null
+          departure_airport?: string | null
           departure_city?: string | null
           description?: string | null
           destination?: string | null
@@ -152,17 +206,30 @@ export type Database = {
           includes_flight?: boolean | null
           includes_hotel?: boolean | null
           includes_transfer?: boolean | null
+          meal_plan?: string | null
+          media_urls?: string[] | null
           nights?: number | null
+          outbound_arrival_time?: string | null
+          outbound_departure_time?: string | null
           payment_link?: string | null
           price?: number | null
           price_note?: string | null
+          return_arrival_time?: string | null
+          return_departure_time?: string | null
+          room_type?: string | null
+          slug?: string | null
           start_date?: string | null
           title?: string | null
         }
         Update: {
+          accommodation_type?: string | null
+          airline?: string | null
+          arrival_airport?: string | null
           country?: string | null
           created_at?: string | null
+          created_by?: string | null
           currency?: string | null
+          departure_airport?: string | null
           departure_city?: string | null
           description?: string | null
           destination?: string | null
@@ -175,10 +242,18 @@ export type Database = {
           includes_flight?: boolean | null
           includes_hotel?: boolean | null
           includes_transfer?: boolean | null
+          meal_plan?: string | null
+          media_urls?: string[] | null
           nights?: number | null
+          outbound_arrival_time?: string | null
+          outbound_departure_time?: string | null
           payment_link?: string | null
           price?: number | null
           price_note?: string | null
+          return_arrival_time?: string | null
+          return_departure_time?: string | null
+          room_type?: string | null
+          slug?: string | null
           start_date?: string | null
           title?: string | null
         }
